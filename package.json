@@ -9,6 +9,8 @@
     "dev": "node --watch server/index.js",
     "test": "node server/__tests__/grader.test.js",
     "smoke": "node scripts/smoke.js",
+    "smoke:frontend": "node scripts/smoke-frontend.mjs",
+    "katex:vendor": "node scripts/vendor-katex.mjs",
     "migrate:supabase": "node scripts/migrate-to-supabase.mjs"
   },
   "engines": {
@@ -19,5 +21,8 @@
     "bcryptjs": "^2.4.3",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "katex": "^0.18.4"
   }
 }

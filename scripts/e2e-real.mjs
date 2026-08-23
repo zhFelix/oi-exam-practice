@@ -79,7 +79,7 @@ console.log(`\n[1] 启动（真实后端，用户 ${uname}）`);
 await import(`file:///${PROJECT}/public/js/app.js`);
 await sleep(500);
 assert(app().innerHTML.includes("题库"), "首页渲染");
-await waitFor(() => text("#total-num") === "60", "题库总数 = 60（真实后端合并题库）");
+await waitFor(() => text("#total-num") === "65", "题库总数 = 65（真实后端合并题库）");
 assert(app().querySelectorAll(".q-list-item").length === 20, "第 1 页 20 条");
 assert(document.querySelector("#nav-user a[href='#/profile']") !== null, "登录态恢复，导航显示用户名");
 

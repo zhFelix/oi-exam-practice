@@ -58,10 +58,10 @@ async function main() {
   // ---- 题库列表与筛选 ----
   console.log('· 题库列表与筛选');
   r = await api('GET', '/questions?page=1&pageSize=10');
-  check('GET /questions 分页 → 200 且 items≤10、total=60', r.status === 200 && r.data.items.length <= 10 && r.data.total === 60, `total=${r.data && r.data.total}`);
+  check('GET /questions 分页 → 200 且 items≤10、total=65', r.status === 200 && r.data.items.length <= 10 && r.data.total === 65, `total=${r.data && r.data.total}`);
   check('列表摘要不含 answer', r.data.items.every((q) => q.answer === undefined));
   r = await api('GET', '/questions?competition=lanqiao');
-  check('筛选 competition=lanqiao → 10 题', r.status === 200 && r.data.total === 10, `total=${r.data && r.data.total}`);
+  check('筛选 competition=lanqiao → 13 题', r.status === 200 && r.data.total === 13, `total=${r.data && r.data.total}`);
   r = await api('GET', '/questions?category=math&type=single');
   check('组合筛选 category=math&type=single 可用', r.status === 200 && r.data.items.every((q) => q.knowledgeCategory === 'math' && q.type === 'single'));
   r = await api('GET', '/questions?keyword=补码');

@@ -18,12 +18,16 @@ const port = Number(process.env.PORT || 4173);
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",   // ES Module（KaTeX ESM 版）
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".ico": "image/x-icon",
   ".webp": "image/webp",
+  ".woff2": "font/woff2",                     // KaTeX 字体
+  ".woff": "font/woff",
+  ".ttf": "font/ttf",
 };
 
 const server = http.createServer((req, res) => {

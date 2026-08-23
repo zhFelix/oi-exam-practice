@@ -154,5 +154,24 @@ await waitFor(() => app().querySelector(".stat-card") !== null, "统计概览卡
 assert(text(".stat-cards").includes("总刷题数"), "概览卡标签");
 assert(app().querySelectorAll(".bar-row").length >= 3, "统计条形图渲染");
 
+console.log("\n[7] LaTeX / Markdown 渲染（KaTeX）");
+const { renderMarkdown } = await import(`file:///${PROJECT}/public/js/utils.js`);
+const holder = document.createElement("div");
+holder.innerHTML = renderMarkdown("时间复杂度为 $O(n\\log n)$");
+assert(holder.querySelector("span.katex") !== null, "行内公式渲染出 <span class=\"katex\">");
+assert(!holder.textContent.includes("$O"), "行内公式无残留 $ 符号");
+const holder2 = document.createElement("div");
+holder2.innerHTML = renderMarkdown("公式：\n\n$$\\frac{1}{2}+\\frac{1}{4}=\\frac{3}{4}$$");
+assert(holder2.querySelector(".katex-block") !== null, "块级公式渲染出 .katex-block");
+assert(holder2.querySelector(".katex-display") !== null, "块级公式含 katex-display");
+// XSS 安全
+const holder3 = document.createElement("div");
+holder3.innerHTML = renderMarkdown("<img src=x onerror=alert(1)>");
+assert(holder3.querySelector("img") === null, "原始 HTML 不注入（XSS 安全）");
+// 代码块回归（公式在代码块内不解析）
+const holder4 = document.createElement("div");
+holder4.innerHTML = renderMarkdown("```cpp\nint x = 1; // $O(n)$\n```");
+assert(holder4.querySelector("pre.code-block") !== null && holder4.querySelector("span.katex") === null, "代码块渲染且内部 $...$ 不解析");
+
 console.log(`\n===== 渲染集成测试：通过 ${pass} 项，失败 ${fail} 项 =====`);
 process.exit(fail ? 1 : 0);

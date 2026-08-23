@@ -74,16 +74,22 @@ assert(app().querySelectorAll(".q-list-item").length === 20, "列表渲染 20 �
 assert(app().querySelectorAll("#f-cat .chip").length === 7, "知识点筛选 7 个 chip");
 assert(app().querySelectorAll("#f-comp button").length === 9, "竞赛类型 Segmented 8 项 + 全部");
 
-console.log("\n[2] 登录（演示账号 demo / 123456）");
+console.log("\n[2] 登录（演示账号 demo@example.com / 123456）");
 await nav("#/login");
 assert(app().querySelector("#login-form"), "登录页渲染");
+assert(app().querySelector('#login-email[type="email"]') !== null, "登录页为邮箱输入框（type=email）");
 const loginForm = app().querySelector("#login-form");
-loginForm.querySelector("#login-user").value = "demo";
+loginForm.querySelector("#login-email").value = "demo@example.com";
 loginForm.querySelector("#login-pass").value = "123456";
 loginForm.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
 await sleep(800);
 assert(text("#nav-user") === "", "导航用户区存在");
 assert(document.querySelector("#nav-user a[href='#/profile']") !== null, "登录后导航显示用户名入口");
+assert(document.querySelector("#nav-user .nav-email") !== null, "导航栏显示邮箱");
+// 个人中心展示 email 与昵称
+await nav("#/profile");
+await waitFor(() => text("#pf-email").includes("demo@example.com"), "个人中心显示邮箱");
+assert(text("#pf-name") === "demo", "个人中心显示昵称");
 
 console.log("\n[3] 练习答题（ids=q001,q003，单选+判断）");
 await nav("#/practice?ids=q001,q003");

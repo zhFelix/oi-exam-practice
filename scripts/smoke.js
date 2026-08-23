@@ -78,20 +78,27 @@ async function main() {
   r = await api('GET', '/questions/q999');
   check('不存在题目 → 404 QUESTION_NOT_FOUND', r.status === 404 && r.data.error.code === 'QUESTION_NOT_FOUND');
 
-  // ---- 注册 / 登录 ----
+  // ---- 注册 / 登录（t17：登录标识改为 email） ----
   console.log('· 用户系统');
-  r = await api('POST', '/auth/register', { username, password: 'secret123', confirmPassword: 'secret123' });
-  check('注册 → 201 且返回 token', r.status === 201 && !!r.data.token);
+  const email = `${username}@smoke.test`;
+  const email2 = `${username}@smoke2.test`;
+  r = await api('POST', '/auth/register', { email, username, password: 'secret123', confirmPassword: 'secret123' });
+  check('注册 → 201 且返回 token', r.status === 201 && !!r.data.token, JSON.stringify(r.data));
   const token = r.data.token;
-  r = await api('POST', '/auth/register', { username, password: 'secret123', confirmPassword: 'secret123' });
-  check('重复注册 → 409 USERNAME_TAKEN', r.status === 409 && r.data.error.code === 'USERNAME_TAKEN');
-  r = await api('POST', '/auth/login', { username, password: 'secret123' });
-  check('登录 → 200 返回 token', r.status === 200 && !!r.data.token);
+  check('注册返回 user 含 id/username/email', r.data.user && r.data.user.id && r.data.user.username === username && r.data.user.email === email);
+  r = await api('POST', '/auth/register', { email, username: `${username}x`, password: 'secret123', confirmPassword: 'secret123' });
+  check('重复邮箱注册 → 409 EMAIL_TAKEN', r.status === 409 && r.data.error.code === 'EMAIL_TAKEN');
+  r = await api('POST', '/auth/register', { email: email2, username, password: 'secret123', confirmPassword: 'secret123' });
+  check('昵称被占用注册 → 409 USERNAME_TAKEN', r.status === 409 && r.data.error.code === 'USERNAME_TAKEN');
+  r = await api('POST', '/auth/register', { email: 'not-an-email', username, password: 'secret123', confirmPassword: 'secret123' });
+  check('邮箱格式错误 → 400 INVALID_EMAIL', r.status === 400 && r.data.error.code === 'INVALID_EMAIL');
+  r = await api('POST', '/auth/login', { email, password: 'secret123' });
+  check('登录（email）→ 200 返回 token', r.status === 200 && !!r.data.token);
   const token2 = r.data.token;
-  r = await api('POST', '/auth/login', { username, password: 'wrong-pass' });
+  r = await api('POST', '/auth/login', { email, password: 'wrong-pass' });
   check('错误密码 → 401 BAD_CREDENTIALS', r.status === 401 && r.data.error.code === 'BAD_CREDENTIALS');
   r = await api('GET', '/auth/me', undefined, token2);
-  check('GET /auth/me 携带 token → 200 返回用户名', r.status === 200 && r.data.username === username);
+  check('GET /auth/me 携带 token → 200 返回用户名与邮箱', r.status === 200 && r.data.username === username && r.data.email === email);
   r = await api('GET', '/auth/me');
   check('GET /auth/me 未登录 → 401', r.status === 401);
 
@@ -215,7 +222,7 @@ async function main() {
   console.log('· 登录限流');
   let saw429 = false;
   for (let i = 0; i < 30; i++) {
-    r = await api('POST', '/auth/login', { username, password: 'wrong-rate-limit-pass' });
+    r = await api('POST', '/auth/login', { email, password: 'wrong-rate-limit-pass' });
     if (r.status === 429) { saw429 = true; break; }
   }
   check('登录接口限流 → 429 RATE_LIMITED', saw429 === true && r.data?.error?.code === 'RATE_LIMITED', JSON.stringify(r && r.data));

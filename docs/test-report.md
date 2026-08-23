@@ -152,3 +152,40 @@
 3. 文档「渲染顺序建议」（data-model v1.3 表述为"HTML 转义 → Markdown → LaTeX"）与实现（先提取 LaTeX 为占位再转义处理 Markdown）表述略有差异，实际均安全，建议后续统一措辞；
 4. data-model v1.3 提到的"数据校验脚本检查 `$` 数量"目前无独立脚本（本次以临时脚本完成校验），建议补入 `scripts/`；
 5. 深色主题公式颜色依赖 KaTeX 继承 + `.katex{color:var(--text-main)}` 兜底，jsdom 无法验证视觉效果，建议真实浏览器走查一次（含移动端）。
+
+---
+
+## 附：t19 Supabase Auth 迁移验收（2025-01）
+
+### 验收结论：通过（有条件）
+
+**认证架构**：后端代理模式——注册走 `supabase.auth.admin.createUser`（`email_confirm:true` 免邮件确认）并写自建 `public.users`（`id`=auth uid、`password_hash` 置空，密码由 GoTrue 托管）；登录走 `signInWithPassword`，前端 token 为 Supabase access_token；鉴权中间件 `supabase.auth.getUser(token)` 验证（不自行验签），`req.user.id`=auth uid，错题本/统计/考试等关联逻辑不变；未配置 Supabase 回退自建 bcrypt+JWT（Legacy，登录兼容 username/email）。`signInWithPassword` 会污染共享客户端会话导致 `.from()` 携带用户 token——已拆分专用 `supabaseData`（service_role）修复。
+
+### 测试结果（真实凭据）
+
+| 套件 | 结果 |
+| --- | --- |
+| 后端单元 `npm test` | 9/9（无回归） |
+| 后端冒烟 `npm run smoke`（Supabase Auth 模式） | **64/64**（含 email 注册/登录、EMAIL_TAKEN、USERNAME_TAKEN、INVALID_EMAIL、/me 邮箱、限流 429） |
+| Auth 专项（t19 新增） | **15/15**：email 注册即登录（Supabase JWT 三段式）、受保护接口全流程（练习/错题/考试/统计按 auth uid）、错误邮箱 400、重复邮箱/昵称 409、错误密码与不存在邮箱均 401 统一提示（不泄露存在性）、无效/缺失 token 401 |
+| 密码存储核查 | ✅ `public.users.password_hash=null`（密码仅存 GoTrue）；`id=auth_uid` 一致 |
+| 前端 mock 冒烟 `smoke:frontend` | **50/50**（含 email 认证用例） |
+| jsdom 渲染 `render-test` | **35/35**（email 登录表单 + 个人中心邮箱） |
+| 前端 E2E × 真实后端（Supabase Auth） | **21/21** |
+| 清理 | ✅ 测试用户已 admin.deleteUser + 关联数据删除 |
+
+### 发现的问题
+
+| # | 级别 | 问题 | 处置 |
+| --- | --- | --- | --- |
+| 1 | P2 | `AUTH_SERVICE_ERROR`（注册/用户资料写入失败）把 Supabase 原始错误消息拼进响应，可能泄露内部细节 | 建议改为通用文案 + 服务端日志（本次未改，列入遗留） |
+| 2 | P2 | `public.users` 写入失败时 GoTrue 用户已创建（无回滚），产生孤儿 auth 用户 | 建议补充失败补偿（admin.deleteUser）或重试机制（列入遗留） |
+| 3 | P2 | 鉴权中间件每请求 `getUser` 网络往返（不自行验签 access_token） | 数据量大后可缓存 JWT 验签（token 本身是 JWT，含 exp）；MVP 量级可接受 |
+| 4 | P2 | `authUserToReqUser` 在 user_metadata 缺 username 时返回 null（仅影响极早期 Supabase 用户） | 已在前端以 email 兜底展示；可回填 metadata |
+| 5 | P3 | `scripts/e2e-real.mjs` 等脚本注册参数更新为 email（本次已同步） | 已修复 |
+
+### 遗留建议
+
+1. 错误信息脱敏（AUTH_SERVICE_ERROR 内部消息）与注册失败补偿（孤儿 auth 用户清理）；
+2. 可选：接入 Supabase Auth 的 refresh_token 自动刷新（当前 token 7 天有效，过期需重新登录）；
+3. 上线建议：启用 `public.users` RLS（`auth.uid()`），并将 `id` 与 `auth_uid` 对齐 uuid 后可加 `auth.users` 外键（迁移脚本尾部已给 SQL）。

@@ -226,6 +226,54 @@ npm run migrate:supabase
 
 ---
 
+## 7. 阶段 3（续）：Supabase Auth 认证迁移（t17 实现 + t19 验收）
+
+### 7.1 目标与方案
+
+自建 bcrypt+JWT 认证迁移到 **Supabase Auth（GoTrue）**，采用**后端代理模式**：Express 通过 supabase-js 调用 GoTrue API，前端 API 契约保持兼容，**登录标识从 username 改为 email**。
+
+- 注册：`supabase.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { username } })`（免邮件确认），并把 `Supabase auth uid + email + username` 写入自建 `public.users`（`id` = auth uid，`password_hash` 置空——密码由 GoTrue 管理）；
+- 登录：`supabase.auth.signInWithPassword({ email, password })`，返回的 `access_token` 即前端 token；
+- 鉴权：`server/middleware/auth.js` 用 `supabase.auth.getUser(token)` 验证（不自行验签），`req.user.id` = auth uid（错题本/统计/考试等关联不变）；
+- **双模式降级**：未配置 Supabase 时回退自建 JWT（data/users.json 路径），登录兼容 username 或 email。
+
+### 7.2 users 表结构变更
+
+迁移 SQL：**`scripts/supabase-auth-migration.sql`**（幂等，Supabase SQL Editor 执行）：
+
+| 变更 | SQL |
+| --- | --- |
+| 新增 email 列（登录标识） | `alter table public.users add column if not exists email text;` |
+| username 取消唯一（降级为昵称） | `alter table public.users drop constraint if exists users_username_key;` |
+| email 唯一部分索引 | `create unique index if not exists users_email_key on public.users(email) where email is not null;` |
+| 新增 auth_uid 列 | `alter table public.users add column if not exists auth_uid uuid;` |
+| auth_uid 唯一部分索引 | `create unique index if not exists users_auth_uid_key on public.users(auth_uid) where auth_uid is not null;` |
+| password_hash 允许为空 | `alter table public.users alter column password_hash drop not null;` |
+
+> 说明：新用户 `public.users.id` 直接使用 Supabase Auth uid（uuid 字符串），`auth_uid` 与 id 同值便于显式关联；旧 `u_xxx` 行保留（Legacy 模式使用）。如需外键关联 `auth.users`，见脚本尾部注释（需先把 id 类型对齐为 uuid）。
+
+### 7.3 错误码契约（保持前端兼容）
+
+| 场景 | 状态码 | code |
+| --- | --- | --- |
+| 邮箱格式错误 | 400 | `INVALID_EMAIL`（新增） |
+| 邮箱已被注册 | 409 | `EMAIL_TAKEN`（新增） |
+| 用户名已被占用（昵称） | 409 | `USERNAME_TAKEN`（保持） |
+| 密码 < 6 位 / 两次不一致 | 400 | `WEAK_PASSWORD` / `PASSWORD_MISMATCH`（保持） |
+| 登录失败（邮箱或密码错） | 401 | `BAD_CREDENTIALS`（保持） |
+| 未登录 / token 失效 | 401 | `UNAUTHORIZED`（保持） |
+| 限流 | 429 | `RATE_LIMITED`（保持） |
+
+### 7.4 验证记录（t17 实现 + t19 验收，真实凭据）
+
+- **Legacy 模式**（占位配置）：`npm run smoke` **64/64 通过**（注册/登录改用 email；Legacy 登录兼容 username 或 email；自建 JWT 载荷已含 email）。
+- **Supabase Auth 模式**（真实凭据，service_role）：注册（admin.createUser 免邮件确认 → public.users 写入 → signInWithPassword 返回 access_token）、登录、`/auth/me`、判分/错题/考试/统计全流程 `npm run smoke` **64/64 通过**；`public.users` 新行 id 为 auth uid（uuid），`password_hash` 为空（密码由 GoTrue 管理）；测试用户已通过 `admin.deleteUser` 清理，库中仅剩 65 题 + 5 卷种子。
+- **重要修复（RLS 污染）**：`signInWithPassword` 会把用户会话注入共享 supabase 客户端，此后 `.from()` 数据请求携带**用户 token**（authenticated 角色）→ 启用 RLS 的 `users` 表插入被策略拒绝（"new row violates row-level security policy"）。已拆分**专用数据客户端 `supabaseData`**（`server/store/supabase.js`，永不执行登录/注册，始终保持 service_role）用于所有 `.from()` 读写；`supabase` 客户端仅用于 Auth API（getUser 显式传 token，不受会话影响）。
+- ✅ **t19 验收补充（已确认迁移 SQL 已执行）**：当前 `users` 表已含 `email/auth_uid` 列且 `password_hash` 可空——实测注册走完整写入（无兼容降级警告）；`public.users` 行 `password_hash=null`、`id=auth_uid` 一致。
+- ✅ **t19 边界用例全部通过**：错误邮箱格式 → 400 `INVALID_EMAIL`；重复邮箱 → 409 `EMAIL_TAKEN`；重复昵称 → 409 `USERNAME_TAKEN`；错误密码/不存在邮箱 → 401 `BAD_CREDENTIALS`（统一提示，不泄露用户存在性）；无效/缺失 token → 401 `UNAUTHORIZED`；Supabase access_token 下练习/错题本/模拟考/统计按 auth uid 关联全部可用（15/15 专项 + 前端 E2E 21/21）。
+
+---
+
 ## 6. 阶段 3：验收与文档（t13，已完成）
 
 ### 6.1 验收结论

@@ -12,6 +12,11 @@ export class ApiError extends Error {
   }
 }
 
+/** 包装异步路由处理器：reject 交给统一错误中间件（Express 4 不自动捕获 async 异常） */
+export function asyncHandler(fn) {
+  return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+}
+
 /** API 404：仅对 /api 前缀返回 JSON，静态资源 404 交给 Express 默认处理 */
 export function notFoundHandler(req, res) {
   if (req.path.startsWith('/api')) {

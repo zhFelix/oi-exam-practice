@@ -12,8 +12,21 @@
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_KEY } from '../config.js';
 
-/** Supabase 客户端单例（进程内唯一实例） */
+/** Supabase 客户端单例（进程内唯一实例；用于 Auth API：createUser / signInWithPassword / getUser） */
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
+});
+
+/**
+ * 数据操作专用客户端（t17 修复）：用于所有 `.from(表)` 读写（SupabaseStore / 题库试卷加载 / 用户资料写入）。
+ * 背景：signInWithPassword 会把用户会话注入客户端内存，此后 .from() 请求将携带**用户 token**
+ * （authenticated 角色）而非 service_role，导致启用 RLS 的表（如 users）插入被策略拒绝。
+ * 本客户端绝不执行登录/注册，始终保持 service_role 权限。
+ */
+export const supabaseData = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,

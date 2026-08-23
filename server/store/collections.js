@@ -12,7 +12,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { DATA_DIR } from '../config.js';
-import { supabase, isSupabaseConfigured } from './supabase.js';
+import { supabaseData, isSupabaseConfigured } from './supabase.js';
 import { DataStore } from './datastore.js';
 import { SupabaseStore } from './supabase-store.js';
 
@@ -143,7 +143,7 @@ export async function initQuestionBank() {
   if (isSupabaseConfigured) {
     try {
       // 显式按 id 排序：PostgREST 默认返回物理存储顺序，不保证题号顺序
-      const { data, error } = await supabase.from('questions').select('*').order('id');
+      const { data, error } = await supabaseData.from('questions').select('*').order('id');
       if (!error && Array.isArray(data)) {
         questionBank.questions.length = 0;
         questionBank.questions.push(...data); // 行字段与 data-model 同名（knowledge_category 等）
@@ -168,7 +168,7 @@ export async function initExams() {
   exams.length = 0;
   if (isSupabaseConfigured) {
     try {
-      const { data, error } = await supabase.from('exams').select('*').order('id');
+      const { data, error } = await supabaseData.from('exams').select('*').order('id');
       if (!error && Array.isArray(data)) {
         for (const e of data) {
           // DB 行用 rules jsonb 存规则；回填 unanswered_as_wrong 供路由复用

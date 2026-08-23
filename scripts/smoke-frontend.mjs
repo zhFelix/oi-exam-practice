@@ -26,17 +26,21 @@ async function expectError(promise, code, name) {
   catch (e) { if (e.code === code) { pass++; console.log(`  ✓ ${name}（${code}）`); } else { console.error(`  ✗ FAIL: ${name}（错误码 ${e.code} 期望 ${code}）`); fail++; } }
 }
 
-console.log("\n[1] 用户系统");
-await expectError(MockBackend.handle("POST", "/auth/register", { username: "demo", password: "123456", confirmPassword: "123456" }), "USERNAME_TAKEN", "重名注册被拒绝");
-await expectError(MockBackend.handle("POST", "/auth/register", { username: "alice", password: "123", confirmPassword: "123" }), "WEAK_PASSWORD", "弱密码被拒绝");
-await expectError(MockBackend.handle("POST", "/auth/register", { username: "alice", password: "123456", confirmPassword: "654321" }), "PASSWORD_MISMATCH", "两次密码不一致被拒绝");
-const reg = await MockBackend.handle("POST", "/auth/register", { username: "alice", password: "123456", confirmPassword: "123456" });
-assert(reg.token && reg.user.username === "alice", "注册成功并返回 token");
-await expectError(MockBackend.handle("POST", "/auth/login", { username: "alice", password: "wrong" }), "BAD_CREDENTIALS", "错误密码登录被拒");
-const login = await MockBackend.handle("POST", "/auth/login", { username: "alice", password: "123456" });
-assert(!!login.token, "正确密码登录成功");
+console.log("\n[1] 用户系统（t18：邮箱登录 + 昵称）");
+// 演示账号昵称占用
+await expectError(MockBackend.handle("POST", "/auth/register", { email: "x@example.com", username: "demo", password: "123456", confirmPassword: "123456" }), "USERNAME_TAKEN", "昵称被占用被拒绝");
+// 邮箱格式 / 弱密码 / 密码不一致
+await expectError(MockBackend.handle("POST", "/auth/register", { email: "not-an-email", username: "alice", password: "123456", confirmPassword: "123456" }), "INVALID_EMAIL", "邮箱格式错误被拒绝");
+await expectError(MockBackend.handle("POST", "/auth/register", { email: "alice@example.com", username: "alice", password: "123", confirmPassword: "123" }), "WEAK_PASSWORD", "弱密码被拒绝");
+await expectError(MockBackend.handle("POST", "/auth/register", { email: "alice@example.com", username: "alice", password: "123456", confirmPassword: "654321" }), "PASSWORD_MISMATCH", "两次密码不一致被拒绝");
+const reg = await MockBackend.handle("POST", "/auth/register", { email: "alice@example.com", username: "alice", password: "123456", confirmPassword: "123456" });
+assert(reg.token && reg.user.username === "alice" && reg.user.email === "alice@example.com", "注册成功并返回 token + user{username, email}");
+await expectError(MockBackend.handle("POST", "/auth/register", { email: "alice@example.com", username: "alice2", password: "123456", confirmPassword: "123456" }), "EMAIL_TAKEN", "邮箱重复注册被拒绝");
+await expectError(MockBackend.handle("POST", "/auth/login", { email: "alice@example.com", password: "wrong" }), "BAD_CREDENTIALS", "错误密码登录被拒");
+const login = await MockBackend.handle("POST", "/auth/login", { email: "alice@example.com", password: "123456" });
+assert(!!login.token && login.user.email === "alice@example.com", "邮箱登录成功");
 const me = await MockBackend.handle("GET", "/auth/me", null, {});
-assert(me.username === "alice", "GET /auth/me 返回当前用户");
+assert(me.username === "alice" && me.email === "alice@example.com", "GET /auth/me 返回 username + email");
 
 console.log("\n[2] 题库筛选");
 const all = await MockBackend.handle("GET", "/questions", null, { page: 1, pageSize: 20 });

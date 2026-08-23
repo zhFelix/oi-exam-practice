@@ -30,9 +30,10 @@ async function api(method, path, body, token) {
   return { status: res.status, data };
 }
 
-// 注册新用户并获取 token（注册即登录）
+// 注册新用户并获取 token（注册即登录；t19：登录标识为 email）
 const uname = "e2e_" + Date.now().toString(36);
-const reg = await api("POST", "/auth/register", { username: uname, password: "secret123", confirmPassword: "secret123" });
+const uemail = `${uname}@e2e.test`;
+const reg = await api("POST", "/auth/register", { email: uemail, username: uname, password: "secret123", confirmPassword: "secret123" });
 if (reg.status !== 201) { console.error("注册失败", reg); process.exit(1); }
 const token = reg.data.token;
 
@@ -139,7 +140,8 @@ modal().querySelector('[data-act="ok"]').click();
 await waitFor(() => app().querySelector(".exam-shell") !== null, "进入考试页");
 assert(app().querySelector("#exam-timer").textContent.includes(":"), "倒计时显示");
 assert(!app().textContent.includes("解析"), "考试页无解析（F3.3）");
-// 答第 1 题（q001 单选 A）
+// 答第 1 题（q001 单选 A；题目异步渲染，等待出现再点击）
+await waitFor(() => app().querySelector(".option[data-opt='A']") !== null, "第 1 题渲染");
 app().querySelector(".option[data-opt='A']").click();
 await sleep(200);
 assert(app().querySelectorAll("#answer-sheet .as-cell").length === 12, "答题卡 12 题");

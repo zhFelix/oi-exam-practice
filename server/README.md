@@ -19,13 +19,14 @@ npm run migrate:supabase  # Supabase 种子数据迁移（需先配置 SUPABASE_
 - 前端静态托管：存在 `public/` 时托管 `public/`（回退 `web/`），`GET /` 返回 SPA 入口。
 - 环境变量：`PORT`（默认 3000）、`JWT_SECRET`（**生产必须设置**；未设置时用开发默认值并打警告日志）、`AUTH_RATE_LIMIT_MAX`（登录/注册限流次数，默认 20）、`SUPABASE_URL` / `SUPABASE_SERVICE_KEY`（Supabase 配置，详见 `docs/supabase.md`）。**项目根 `.env` 会被自动加载**（`server/utils/load-env.js`，不覆盖已有环境变量；`.env` 已被 .gitignore 排除）。
 
-## Supabase 集成（t11 框架 + t12 存储替换，已完成）
+## Supabase 集成（t11 框架 + t12 存储替换 + t17 Auth 迁移）
 
-- **存储层已替换**（t12）：`server/store/collections.js` 启动时选择存储后端——Supabase 可用则 `SupabaseStore`（`server/store/supabase-store.js`，内存缓存 + 异步持久化，接口与 DataStore 一致），否则回退 JSON `DataStore`；题库/试卷启动时优先从 Supabase `questions`/`exams` 表读取，失败回退数据文件（枚举定义始终来自数据文件）。业务路由零改动。
-- `server/store/supabase.js`：`createClient` 单例（导出 `supabase` 与 `isSupabaseConfigured` 标志；`auth.persistSession=false`；后端用 service_role key）。
-- `docs/supabase.md`：建表 SQL（7 张表，id 文本主键、结构字段 jsonb）+ 配置/迁移/阶段 2 说明。
-- `scripts/migrate-to-supabase.mjs`（`npm run migrate:supabase`）：合并读取 60 题 + 5 套卷，按 id upsert 到 `questions` / `exams`（幂等可重复执行；`score/question_count/total_score` 实时计算；未配置真实凭据时直接退出并提示）。
-- 验证：Supabase 模式与 JSON 降级模式 `npm run smoke` 均 **61/61 通过**（真实凭据实测）。
+- **存储层已替换**（t12）：`server/store/collections.js` 启动时选择存储后端——Supabase 可用则 `SupabaseStore`（`server/store/supabase-store.js`，内存缓存 + 串行异步持久化 + 优雅退出 flush，接口与 DataStore 一致），否则回退 JSON `DataStore`；题库/试卷启动时优先从 Supabase `questions`/`exams` 表读取，失败回退数据文件（枚举定义始终来自数据文件）。业务路由零改动。
+- **认证已迁移**（t17，后端代理模式）：Supabase Auth 模式下注册用 `supabase.auth.admin.createUser`（email_confirm 免确认）并写入自建 `public.users`（id = auth uid）；登录用 `signInWithPassword`（**登录标识为 email**）；鉴权中间件用 `supabase.auth.getUser(token)` 验证；未配置 Supabase 时回退自建 bcrypt+JWT（登录兼容 username 或 email）。users 表迁移 SQL：`scripts/supabase-auth-migration.sql`（新增 email/auth_uid 列、username 取消唯一、password_hash 可空）。
+- `server/store/supabase.js`：`createClient` 单例（导出 `supabase` 与 `isSupabaseConfigured` 标志；`auth.persistSession=false`；后端用 service_role key，**严禁暴露给前端**）。
+- `docs/supabase.md`：建表 SQL + 配置/迁移/阶段 2 存储/阶段 3 Auth 说明。
+- `scripts/migrate-to-supabase.mjs`（`npm run migrate:supabase`）：合并读取 65 题 + 5 套卷，按 id upsert 到 `questions` / `exams`（幂等可重复执行；未配置真实凭据时直接退出并提示）。
+- 验证：Supabase 模式与 JSON 降级模式 `npm run smoke` 均全部通过（t17 起注册/登录用 email；真实凭据实测 Supabase Auth 注册/登录/鉴权全流程）。
 
 ## 目录结构
 
@@ -66,9 +67,9 @@ server/
 
 | 方法 | 路径 | 说明 | 权限 |
 | --- | --- | --- | --- |
-| POST | `/api/auth/register` | 注册（注册即登录） | 匿名 |
-| POST | `/api/auth/login` | 登录 | 匿名 |
-| GET | `/api/auth/me` | 当前用户 | 登录 |
+| POST | `/api/auth/register` | 注册（注册即登录；`{email, username, password, confirmPassword}`） | 匿名 |
+| POST | `/api/auth/login` | 登录（`{email, password}`；Legacy 模式兼容 username） | 匿名 |
+| GET | `/api/auth/me` | 当前用户（`{id, username, email}`） | 登录 |
 | GET | `/api/meta/competition-types` | 竞赛类型枚举 `[{code,label}]`（8 项，前端动态渲染筛选） | 匿名 |
 | GET | `/api/meta/categories` / `/types` / `/difficulty-levels` | 分类/题型/难度枚举 | 匿名 |
 | GET | `/api/questions` | 列表+筛选+分页 | 匿名（不含答案） |

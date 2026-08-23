@@ -121,8 +121,11 @@ function renderNavbar() {
   const userBox = navbarEl.querySelector("#nav-user");
   const renderUser = () => {
     if (Auth.isLoggedIn()) {
+      const u = Auth.user || {};
+      // 导航栏：昵称（username）为主，邮箱桌面端可见（移动端隐藏）
       userBox.innerHTML = `
-        <a class="btn-text" href="#/profile">👤 ${escapeHtml(Auth.user ? Auth.user.username : "")}</a>
+        <a class="btn-text" href="#/profile" title="${escapeHtml(u.email || "")}">👤 ${escapeHtml(u.username || u.email || "")}</a>
+        ${u.email ? `<span class="nav-email" title="${escapeHtml(u.email)}">${escapeHtml(u.email)}</span>` : ""}
         <button class="btn btn-secondary btn-sm" id="nav-logout">退出</button>`;
       userBox.querySelector("#nav-logout").addEventListener("click", async () => {
         const ok = await confirmDialog({ title: "退出登录", body: "确定要退出登录吗？", confirmText: "退出", danger: true });

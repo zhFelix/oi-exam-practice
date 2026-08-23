@@ -131,16 +131,25 @@ function loadQuestionsFromFiles() {
   }
 }
 
-/** 加载题库：Supabase questions 表优先，失败回退数据文件（t12） */
+/** 题库按题号（id）排序：q001、q002、…、q101、q113（数字序，非字典序） */
+function sortQuestionsById() {
+  questionBank.questions.sort((a, b) =>
+    String(a.id).localeCompare(String(b.id), undefined, { numeric: true, sensitivity: 'base' })
+  );
+}
+
+/** 加载题库：Supabase questions 表优先，失败回退数据文件（t12）；统一按 id 排序 */
 export async function initQuestionBank() {
   if (isSupabaseConfigured) {
     try {
-      const { data, error } = await supabase.from('questions').select('*');
+      // 显式按 id 排序：PostgREST 默认返回物理存储顺序，不保证题号顺序
+      const { data, error } = await supabase.from('questions').select('*').order('id');
       if (!error && Array.isArray(data)) {
         questionBank.questions.length = 0;
         questionBank.questions.push(...data); // 行字段与 data-model 同名（knowledge_category 等）
         loadEnumsFromFiles();
-        console.log(`[bank] 题库从 Supabase questions 表加载：${data.length} 题`);
+        sortQuestionsById();
+        console.log(`[bank] 题库从 Supabase questions 表加载：${data.length} 题（按题号排序）`);
         return questionBank;
       }
       console.warn(`[bank] Supabase 题库加载失败（${error && error.message}），回退数据文件`);
@@ -150,6 +159,7 @@ export async function initQuestionBank() {
   }
   loadEnumsFromFiles();
   loadQuestionsFromFiles();
+  sortQuestionsById();
   return questionBank;
 }
 

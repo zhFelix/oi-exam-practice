@@ -1,0 +1,21 @@
+{
+  "name": "oi-exam-practice",
+  "version": "1.0.0",
+  "private": true,
+  "description": "信息学竞赛笔试刷题平台后端（Express + JSON 文件存储）",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node server/__tests__/grader.test.js",
+    "smoke": "node scripts/smoke.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

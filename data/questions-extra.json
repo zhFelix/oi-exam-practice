@@ -1,0 +1,609 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "name": "扩展题库——其他竞赛样例题",
+    "description": "竞赛类型扩展样例题：蓝桥杯（lanqiao）10 题、省级（provincial）6 题、市级（municipal）7 题、校级（school）6 题、其他（other）5 题，共 34 题",
+    "note": "与 data/questions.json 使用同一数据结构；题型与知识点分类枚举以主文件为准（本文件不重复定义），竞赛类型 id 须在扩展后的通用枚举内。合并导入时以 id 为唯一键去重（两文件 id 不重叠）。q040~q060 为第二批扩充题（评审建议题库 ≥60 题）。",
+    "extends": "data/questions.json",
+    "created_at": "2025-01-02",
+    "total_questions": 34
+  },
+  "questions": [
+    {
+      "id": "q101",
+      "type": "single",
+      "knowledge_category": "math",
+      "knowledge_points": ["进制转换", "二进制转十进制"],
+      "competition_types": ["lanqiao", "csp-j"],
+      "difficulty": "beginner",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "二进制数 1110 转换为十进制数是（ ）。",
+      "options": [
+        { "key": "A", "text": "12" },
+        { "key": "B", "text": "13" },
+        { "key": "C", "text": "14" },
+        { "key": "D", "text": "15" }
+      ],
+      "answer": "C",
+      "analysis": "按位权展开：1110₂ = 1×2³ + 1×2² + 1×2¹ + 0×2⁰ = 8 + 4 + 2 + 0 = 14。"
+    },
+    {
+      "id": "q102",
+      "type": "single",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["输入输出", "标准输出"],
+      "competition_types": ["lanqiao"],
+      "difficulty": "beginner",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "在 C++ 中，用于向标准输出（屏幕）输出内容的对象是（ ）。",
+      "options": [
+        { "key": "A", "text": "cin" },
+        { "key": "B", "text": "cout" },
+        { "key": "C", "text": "scanf" },
+        { "key": "D", "text": "getchar" }
+      ],
+      "answer": "B",
+      "analysis": "cout 配合流插入运算符 << 用于标准输出；cin 是标准输入对象，scanf 与 getchar 是 C 语言的输入函数。"
+    },
+    {
+      "id": "q103",
+      "type": "multiple",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["计算机硬件", "输入输出设备"],
+      "competition_types": ["lanqiao"],
+      "difficulty": "beginner",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "下列设备中，属于计算机输出设备的有（ ）。",
+      "options": [
+        { "key": "A", "text": "显示器" },
+        { "key": "B", "text": "键盘" },
+        { "key": "C", "text": "打印机" },
+        { "key": "D", "text": "鼠标" },
+        { "key": "E", "text": "音箱" }
+      ],
+      "answer": ["A", "C", "E"],
+      "analysis": "输出设备将计算机处理的结果呈现给用户：显示器、打印机、音箱均为输出设备；键盘、鼠标是输入设备。多选题须全对才得分。"
+    },
+    {
+      "id": "q104",
+      "type": "judge",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["二分查找"],
+      "competition_types": ["lanqiao"],
+      "difficulty": "beginner",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "使用二分查找的前提是待查找的数据已经有序。（ ）",
+      "answer": true,
+      "analysis": "二分查找每次通过与中间元素比较来排除一半区间，只有数据有序时排除才成立，因此前提是数据有序，判断正确。"
+    },
+    {
+      "id": "q105",
+      "type": "single",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["队列", "线性结构"],
+      "competition_types": ["provincial", "csp-j"],
+      "difficulty": "beginner",
+      "source": "省级联赛风格（自编）",
+      "stem": "队列是一种特殊的线性表，其数据操作的特点是（ ）。",
+      "options": [
+        { "key": "A", "text": "先进先出（FIFO）" },
+        { "key": "B", "text": "后进先出（LIFO）" },
+        { "key": "C", "text": "只允许在两端删除" },
+        { "key": "D", "text": "支持随机存取" }
+      ],
+      "answer": "A",
+      "analysis": "队列只允许在队尾插入、在队头删除，遵循先进先出（FIFO）；后进先出（LIFO）是栈的特点。"
+    },
+    {
+      "id": "q106",
+      "type": "judge",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["存储单位"],
+      "competition_types": ["provincial"],
+      "difficulty": "beginner",
+      "source": "省级联赛风格（自编）",
+      "stem": "在计算机中，1 KB 等于 1024 字节（Byte）。（ ）",
+      "answer": true,
+      "analysis": "计算机存储单位按 2 的幂换算：1 KB = 2¹⁰ B = 1024 B，1 MB = 1024 KB，依此类推，判断正确。"
+    },
+    {
+      "id": "q107",
+      "type": "single",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["运算符", "取模"],
+      "competition_types": ["municipal"],
+      "difficulty": "beginner",
+      "source": "市级赛风格（自编）",
+      "stem": "在 C++ 中，设 int 类型变量 x = 10, y = 3，则表达式 x % y 的值是（ ）。",
+      "options": [
+        { "key": "A", "text": "1" },
+        { "key": "B", "text": "3" },
+        { "key": "C", "text": "0" },
+        { "key": "D", "text": "3.33" }
+      ],
+      "answer": "A",
+      "analysis": "% 是取模（求余）运算：10 = 3×3 + 1，余数为 1，且结果为 int 类型。"
+    },
+    {
+      "id": "q108",
+      "type": "judge",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["排序", "快速排序", "时间复杂度"],
+      "competition_types": ["municipal", "csp-j"],
+      "difficulty": "intermediate",
+      "source": "市级赛风格（自编）",
+      "stem": "快速排序的平均时间复杂度为 O(n log n)。（ ）",
+      "answer": true,
+      "analysis": "快速排序平均情况下每次划分将问题规模近似减半，递归深度为 O(log n)，每层总工作量 O(n)，总复杂度 O(n log n)；最坏情况（如已有序且枢轴选取不当）会退化为 O(n²)。"
+    },
+    {
+      "id": "q109",
+      "type": "single",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["栈", "出栈序列"],
+      "competition_types": ["municipal"],
+      "difficulty": "intermediate",
+      "source": "市级赛风格（自编）",
+      "stem": "一个栈的入栈序列为 1, 2, 3（按此顺序入栈），则下列出栈序列中不可能的是（ ）。",
+      "options": [
+        { "key": "A", "text": "3, 2, 1" },
+        { "key": "B", "text": "1, 2, 3" },
+        { "key": "C", "text": "1, 3, 2" },
+        { "key": "D", "text": "3, 1, 2" }
+      ],
+      "answer": "D",
+      "analysis": "若 3 先出栈，说明 1、2、3 均已入栈，栈内自底向上为 1、2、3，3 出栈后栈顶是 2，不可能先出 1，故 3, 1, 2 不可能。A、B、C 均可通过调整入栈出栈时机实现。"
+    },
+    {
+      "id": "q110",
+      "type": "single",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["计算机硬件", "输入输出设备"],
+      "competition_types": ["school"],
+      "difficulty": "beginner",
+      "source": "校级选拔风格（自编）",
+      "stem": "下列设备中，属于输入设备的是（ ）。",
+      "options": [
+        { "key": "A", "text": "显示器" },
+        { "key": "B", "text": "键盘" },
+        { "key": "C", "text": "打印机" },
+        { "key": "D", "text": "音箱" }
+      ],
+      "answer": "B",
+      "analysis": "键盘用于向计算机输入信息，属于输入设备；显示器、打印机、音箱均为输出设备。"
+    },
+    {
+      "id": "q111",
+      "type": "judge",
+      "knowledge_category": "math",
+      "knowledge_points": ["进制转换", "十进制转二进制"],
+      "competition_types": ["school"],
+      "difficulty": "beginner",
+      "source": "校级选拔风格（自编）",
+      "stem": "十进制数 10 转换为二进制数为 1010。（ ）",
+      "answer": true,
+      "analysis": "10 = 8 + 2 = 2³ + 2¹，对应二进制 1010，判断正确。"
+    },
+    {
+      "id": "q112",
+      "type": "single",
+      "knowledge_category": "math",
+      "knowledge_points": ["幂运算"],
+      "competition_types": ["other", "csp-j"],
+      "difficulty": "beginner",
+      "source": "其他竞赛风格（自编）",
+      "stem": "2 的 10 次方，即 2^10，等于（ ）。",
+      "options": [
+        { "key": "A", "text": "512" },
+        { "key": "B", "text": "1024" },
+        { "key": "C", "text": "2048" },
+        { "key": "D", "text": "1000" }
+      ],
+      "answer": "B",
+      "analysis": "2^10 = 1024，这也是存储单位 1 KB = 1024 B 的由来；注意与 10³ = 1000 区分。"
+    },
+    {
+      "id": "q113",
+      "type": "judge",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["C++ 语言特性", "面向对象"],
+      "competition_types": ["other"],
+      "difficulty": "beginner",
+      "source": "其他竞赛风格（自编）",
+      "stem": "C++ 是一种支持面向对象编程的通用编程语言。（ ）",
+      "answer": true,
+      "analysis": "C++ 在 C 语言基础上扩展了类、封装、继承、多态等面向对象特性，同时支持过程式与面向对象两种编程范式，判断正确。"
+    },
+    {
+      "id": "q040",
+      "type": "reading",
+      "knowledge_category": "reading",
+      "knowledge_points": ["循环", "奇偶判断", "阅读程序"],
+      "competition_types": ["lanqiao", "csp-j"],
+      "difficulty": "beginner",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "阅读下列 C++ 程序，回答后面的问题。",
+      "code": "#include <iostream>\nusing namespace std;\nint main() {\n    int n = 10, sum = 0;\n    for (int i = 1; i <= n; i++)\n        if (i % 2 == 0) sum += i;\n    cout << sum << endl;\n    return 0;\n}",
+      "sub_questions": [
+        {
+          "id": "q040-1",
+          "type": "single",
+          "stem": "程序的输出是（ ）。",
+          "options": [
+            { "key": "A", "text": "20" },
+            { "key": "B", "text": "30" },
+            { "key": "C", "text": "55" },
+            { "key": "D", "text": "25" }
+          ],
+          "answer": "B",
+          "analysis": "循环累加 1 到 10 中的偶数：2+4+6+8+10 = 30，输出 30。"
+        },
+        {
+          "id": "q040-2",
+          "type": "judge",
+          "stem": "若把判断条件改为 i % 2 == 1，则程序输出为 25。（ ）",
+          "answer": true,
+          "analysis": "改为奇数判断后累加 1+3+5+7+9 = 25，判断正确。"
+        }
+      ],
+      "answer": ["B", true],
+      "analysis": "本题考查 for 循环与奇偶判断。第 1 小题输出 30；第 2 小题改判奇数为 25。"
+    },
+    {
+      "id": "q041",
+      "type": "reading",
+      "knowledge_category": "reading",
+      "knowledge_points": ["递归", "阶乘", "阅读程序"],
+      "competition_types": ["school", "csp-j"],
+      "difficulty": "beginner",
+      "source": "校级选拔风格（自编）",
+      "stem": "阅读下列 C++ 程序，回答后面的问题。",
+      "code": "#include <iostream>\nusing namespace std;\nint f(int n) {\n    if (n <= 1) return 1;\n    return n * f(n - 1);\n}\nint main() {\n    cout << f(4) << endl;\n    return 0;\n}",
+      "sub_questions": [
+        {
+          "id": "q041-1",
+          "type": "single",
+          "stem": "程序的输出是（ ）。",
+          "options": [
+            { "key": "A", "text": "12" },
+            { "key": "B", "text": "8" },
+            { "key": "C", "text": "24" },
+            { "key": "D", "text": "6" }
+          ],
+          "answer": "C",
+          "analysis": "递归计算阶乘：f(4) = 4×f(3) = 4×3×f(2) = 4×3×2×f(1) = 4×3×2×1 = 24。"
+        },
+        {
+          "id": "q041-2",
+          "type": "judge",
+          "stem": "若 n 为负数，该程序会发生无限递归。（ ）",
+          "answer": false,
+          "analysis": "当 n ≤ 1 时函数直接返回 1，负数同样满足基础条件立即返回，不会无限递归，判断错误。"
+        }
+      ],
+      "answer": ["C", false],
+      "analysis": "本题考查递归与阶乘。第 1 小题 f(4)=24；第 2 小题负数输入被基础条件拦截，不会无限递归。"
+    },
+    {
+      "id": "q042",
+      "type": "judge",
+      "knowledge_category": "noi-knowledge",
+      "knowledge_points": ["NOI 赛事", "历史规则"],
+      "competition_types": ["provincial"],
+      "difficulty": "beginner",
+      "source": "省级联赛风格（自编）",
+      "stem": "历史上，Pascal 语言曾长期是 NOI 系列赛事指定的可用编程语言之一（现已退出）。",
+      "answer": true,
+      "analysis": "Pascal 曾是 NOI 系列比赛的指定语言之一，NOIP 2022 起全面采用 C++，Pascal 与 C 退出赛场，判断正确。"
+    },
+    {
+      "id": "q043",
+      "type": "single",
+      "knowledge_category": "noi-knowledge",
+      "knowledge_points": ["IOI", "竞赛常识"],
+      "competition_types": ["other"],
+      "difficulty": "beginner",
+      "source": "其他竞赛风格（自编）",
+      "stem": "国际信息学奥林匹克竞赛（IOI）的举办频率是（ ）。",
+      "options": [
+        { "key": "A", "text": "每年一次" },
+        { "key": "B", "text": "每两年一次" },
+        { "key": "C", "text": "每四年一次" },
+        { "key": "D", "text": "不定期举办" }
+      ],
+      "answer": "A",
+      "analysis": "IOI 自 1989 年起每年举办一次，各成员国选派选手参赛，是信息学竞赛领域的顶级国际赛事。"
+    },
+    {
+      "id": "q044",
+      "type": "multiple",
+      "knowledge_category": "math",
+      "knowledge_points": ["幂运算", "数的性质"],
+      "competition_types": ["lanqiao", "csp-j"],
+      "difficulty": "beginner",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "下列数中，是 2 的整数次幂的有（ ）。",
+      "options": [
+        { "key": "A", "text": "8" },
+        { "key": "B", "text": "12" },
+        { "key": "C", "text": "32" },
+        { "key": "D", "text": "100" },
+        { "key": "E", "text": "64" }
+      ],
+      "answer": ["A", "C", "E"],
+      "analysis": "8=2³、32=2⁵、64=2⁶ 都是 2 的整数次幂；12=3×4、100=10² 不是。多选题须全对才得分。"
+    },
+    {
+      "id": "q045",
+      "type": "single",
+      "knowledge_category": "math",
+      "knowledge_points": ["计数原理", "排列组合"],
+      "competition_types": ["municipal"],
+      "difficulty": "intermediate",
+      "source": "市级赛风格（自编）",
+      "stem": "用数字 0、1、2（可重复使用）能组成多少个不同的三位数（百位不能为 0）？（ ）。",
+      "options": [
+        { "key": "A", "text": "6" },
+        { "key": "B", "text": "9" },
+        { "key": "C", "text": "18" },
+        { "key": "D", "text": "27" }
+      ],
+      "answer": "C",
+      "analysis": "分步计数：百位有 2 种选择（1 或 2），十位、个位各有 3 种选择，共 2×3×3 = 18 个。"
+    },
+    {
+      "id": "q046",
+      "type": "judge",
+      "knowledge_category": "math",
+      "knowledge_points": ["概率"],
+      "competition_types": ["school"],
+      "difficulty": "intermediate",
+      "source": "校级选拔风格（自编）",
+      "stem": "抛一枚均匀硬币 3 次，恰好出现 2 次正面的概率为 3/8。（ ）",
+      "answer": true,
+      "analysis": "3 次抛掷共 2³=8 种等可能结果，恰好 2 次正面的情况数为 C(3,2)=3，概率 = 3/8，判断正确。"
+    },
+    {
+      "id": "q047",
+      "type": "single",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["头文件", "输入输出"],
+      "competition_types": ["lanqiao"],
+      "difficulty": "beginner",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "在 C++ 中，使用 cin / cout 需要包含的头文件是（ ）。",
+      "options": [
+        { "key": "A", "text": "<iostream>" },
+        { "key": "B", "text": "<stdio.h>" },
+        { "key": "C", "text": "<math.h>" },
+        { "key": "D", "text": "<string.h>" }
+      ],
+      "answer": "A",
+      "analysis": "cin/cout 定义于标准输入输出流头文件 <iostream>；<stdio.h> 提供 C 语言的 printf/scanf 等。"
+    },
+    {
+      "id": "q048",
+      "type": "single",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["运算符", "整除取模"],
+      "competition_types": ["provincial"],
+      "difficulty": "beginner",
+      "source": "省级联赛风格（自编）",
+      "stem": "在 C++ 中，设 int 类型变量 a = 7, b = 3，则表达式 a / b 与 a % b 的值分别为（ ）。",
+      "options": [
+        { "key": "A", "text": "2 和 1" },
+        { "key": "B", "text": "2 和 2" },
+        { "key": "C", "text": "3 和 1" },
+        { "key": "D", "text": "3 和 0" }
+      ],
+      "answer": "A",
+      "analysis": "整数除法 7/3 = 2（截去小数），取模 7%3 = 1（7 = 2×3 + 1）。"
+    },
+    {
+      "id": "q049",
+      "type": "single",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["字符串"],
+      "competition_types": ["other"],
+      "difficulty": "beginner",
+      "source": "其他竞赛风格（自编）",
+      "stem": "C++ 中字符串 \"abc\" 的字符个数（不含结尾的空字符）是（ ）。",
+      "options": [
+        { "key": "A", "text": "2" },
+        { "key": "B", "text": "3" },
+        { "key": "C", "text": "4" },
+        { "key": "D", "text": "5" }
+      ],
+      "answer": "B",
+      "analysis": "字符串 \"abc\" 含 3 个字符 a、b、c；C 风格字符串末尾还有一个隐藏的 '\\0' 结束符，但题目要求不含结束符，答案为 3。"
+    },
+    {
+      "id": "q050",
+      "type": "single",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["操作系统", "软件分类"],
+      "competition_types": ["lanqiao"],
+      "difficulty": "beginner",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "下列软件中，属于操作系统的是（ ）。",
+      "options": [
+        { "key": "A", "text": "Windows" },
+        { "key": "B", "text": "Excel" },
+        { "key": "C", "text": "Photoshop" },
+        { "key": "D", "text": "Chrome" }
+      ],
+      "answer": "A",
+      "analysis": "Windows 是操作系统，负责管理计算机硬件与软件资源；Excel、Photoshop、Chrome 分别是表格、图像处理、浏览器应用软件。"
+    },
+    {
+      "id": "q051",
+      "type": "judge",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["进制", "无符号数"],
+      "competition_types": ["municipal"],
+      "difficulty": "intermediate",
+      "source": "市级赛风格（自编）",
+      "stem": "二进制数 1000 0000 作为无符号数时表示十进制 128。（ ）",
+      "answer": true,
+      "analysis": "无符号二进制 1000 0000 的最高位也参与数值计算：2⁷ = 128，判断正确。若作为 8 位补码有符号数，1000 0000 表示 -128，注意区分。"
+    },
+    {
+      "id": "q052",
+      "type": "single",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["计算机史", "计算机人物"],
+      "competition_types": ["school"],
+      "difficulty": "beginner",
+      "source": "校级选拔风格（自编）",
+      "stem": "提出\"存储程序控制\"（程序和数据均存于内存，由 CPU 顺序取指执行）计算机体系结构设想的科学家是（ ）。",
+      "options": [
+        { "key": "A", "text": "冯·诺依曼" },
+        { "key": "B", "text": "图灵" },
+        { "key": "C", "text": "香农" },
+        { "key": "D", "text": "巴贝奇" }
+      ],
+      "answer": "A",
+      "analysis": "冯·诺依曼提出了存储程序控制的思想，即\"冯·诺依曼体系结构\"，至今仍为绝大多数计算机所采用；图灵被誉为\"计算机科学之父\"，香农是信息论奠基人。"
+    },
+    {
+      "id": "q053",
+      "type": "multiple",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["二叉树", "树"],
+      "competition_types": ["lanqiao"],
+      "difficulty": "intermediate",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "下列关于二叉树的说法，正确的有（ ）。",
+      "options": [
+        { "key": "A", "text": "每个节点最多有两个子节点" },
+        { "key": "B", "text": "满二叉树一定是完全二叉树" },
+        { "key": "C", "text": "完全二叉树一定是满二叉树" },
+        { "key": "D", "text": "二叉树可以是空树" },
+        { "key": "E", "text": "二叉树的深度等于节点个数" }
+      ],
+      "answer": ["A", "B", "D"],
+      "analysis": "二叉树每个节点至多两个子树（A 对）；满二叉树是每层都填满的二叉树，必为完全二叉树（B 对）；完全二叉树不一定是满二叉树（C 错）；二叉树允许为空（D 对）；深度与节点数无必然相等关系（E 错）。多选须全对才得分。"
+    },
+    {
+      "id": "q054",
+      "type": "single",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["队列"],
+      "competition_types": ["provincial"],
+      "difficulty": "beginner",
+      "source": "省级联赛风格（自编）",
+      "stem": "队列中，入队（插入）操作发生在（ ）。",
+      "options": [
+        { "key": "A", "text": "队头" },
+        { "key": "B", "text": "队尾" },
+        { "key": "C", "text": "队列中间任意位置" },
+        { "key": "D", "text": "任意一端" }
+      ],
+      "answer": "B",
+      "analysis": "队列遵循先进先出（FIFO）：入队从队尾插入，出队从队头删除，两侧职责固定。"
+    },
+    {
+      "id": "q055",
+      "type": "single",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["哈希表", "时间复杂度"],
+      "competition_types": ["municipal"],
+      "difficulty": "intermediate",
+      "source": "市级赛风格（自编）",
+      "stem": "哈希表（散列表）在理想情况下（散列均匀、冲突少）查找一个元素的平均时间复杂度为（ ）。",
+      "options": [
+        { "key": "A", "text": "O(1)" },
+        { "key": "B", "text": "O(n)" },
+        { "key": "C", "text": "O(log n)" },
+        { "key": "D", "text": "O(n²)" }
+      ],
+      "answer": "A",
+      "analysis": "哈希表通过散列函数直接定位存储位置，理想情况下查找、插入、删除平均都是 O(1)；冲突严重时可能退化，但平均意义下为 O(1)。"
+    },
+    {
+      "id": "q056",
+      "type": "single",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["链表", "时间复杂度"],
+      "competition_types": ["other", "csp-j"],
+      "difficulty": "intermediate",
+      "source": "其他竞赛风格（自编）",
+      "stem": "在长度为 n 的单链表中，按给定位置（下标）查找第 k 个元素（1 ≤ k ≤ n），其时间复杂度为（ ）。",
+      "options": [
+        { "key": "A", "text": "O(1)" },
+        { "key": "B", "text": "O(log n)" },
+        { "key": "C", "text": "O(n)" },
+        { "key": "D", "text": "O(n²)" }
+      ],
+      "answer": "C",
+      "analysis": "单链表不支持下标随机访问，按位置查找必须从头节点顺序遍历，最坏需访问 n 个节点，时间复杂度 O(n)。"
+    },
+    {
+      "id": "q057",
+      "type": "multiple",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["动态规划"],
+      "competition_types": ["lanqiao"],
+      "difficulty": "intermediate",
+      "source": "蓝桥杯青少组风格（自编）",
+      "stem": "适合用动态规划求解的问题通常具备的特征有（ ）。",
+      "options": [
+        { "key": "A", "text": "最优子结构" },
+        { "key": "B", "text": "无后效性" },
+        { "key": "C", "text": "子问题重叠" },
+        { "key": "D", "text": "数据必须有序" },
+        { "key": "E", "text": "只能处理小规模数据" }
+      ],
+      "answer": ["A", "B", "C"],
+      "analysis": "动态规划适用条件：最优子结构（全局最优包含局部最优）、无后效性（状态确定后不再受之前决策影响）、子问题重叠（用记忆化避免重复计算）。与数据是否有序无关，规模也不是限制条件。多选须全对才得分。"
+    },
+    {
+      "id": "q058",
+      "type": "single",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["搜索", "DFS"],
+      "competition_types": ["provincial"],
+      "difficulty": "beginner",
+      "source": "省级联赛风格（自编）",
+      "stem": "深度优先搜索（DFS）通常借助哪种数据结构实现？",
+      "options": [
+        { "key": "A", "text": "队列" },
+        { "key": "B", "text": "栈" },
+        { "key": "C", "text": "堆" },
+        { "key": "D", "text": "哈希表" }
+      ],
+      "answer": "B",
+      "analysis": "DFS 递归实现时系统自动使用调用栈，非递归实现则显式使用栈；BFS 使用队列实现。"
+    },
+    {
+      "id": "q059",
+      "type": "single",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["排序", "归并排序"],
+      "competition_types": ["municipal"],
+      "difficulty": "intermediate",
+      "source": "市级赛风格（自编）",
+      "stem": "对 n 个元素进行归并排序，其时间复杂度为（ ）。",
+      "options": [
+        { "key": "A", "text": "O(n)" },
+        { "key": "B", "text": "O(n log n)" },
+        { "key": "C", "text": "O(n²)" },
+        { "key": "D", "text": "O(log n)" }
+      ],
+      "answer": "B",
+      "analysis": "归并排序每次把区间对半划分（递归深度 O(log n)），每层合并的总工作量 O(n)，总时间复杂度 O(n log n)，且是稳定排序。"
+    },
+    {
+      "id": "q060",
+      "type": "judge",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["二分查找"],
+      "competition_types": ["school"],
+      "difficulty": "intermediate",
+      "source": "校级选拔风格（自编）",
+      "stem": "用二分查找在有序数组 [1, 3, 5, 7, 9, 11] 中查找 9，需要比较的次数为 3 次。（ ）",
+      "answer": false,
+      "analysis": "查找过程：第一次比较中间元素 a[2]=5，5<9 转向右半区间；第二次比较 a[4]=9，命中。共比较 2 次，并非 3 次，判断错误。"
+    }
+  ]
+}

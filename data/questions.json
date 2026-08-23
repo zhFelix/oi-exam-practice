@@ -1,0 +1,529 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "name": "信息学竞赛初赛笔试种子题库",
+    "description": "CSP-J/S 与 NOIP 初赛笔试风格题目（自编/真题风格改编），覆盖 7 个知识点分类与 4 种题型",
+    "note": "竞赛类型为通用可扩展枚举（见顶层 competition_types），蓝桥杯/省市校级等其他竞赛样例题见 data/questions-extra.json",
+    "created_at": "2025-01-01",
+    "total_questions": 26
+  },
+  "question_types": [
+    { "id": "single", "name": "单选题", "description": "4 个选项，唯一答案" },
+    { "id": "multiple", "name": "多选题", "description": "4~5 个选项，1 个以上正确答案，全对才得分" },
+    { "id": "judge", "name": "判断题", "description": "正确/错误二选一" },
+    { "id": "reading", "name": "阅读程序题", "description": "给出 C/C++ 程序，附带 1~N 道子小题（单选/判断）" }
+  ],
+  "knowledge_categories": [
+    { "id": "cplusplus", "name": "C++ 语言基础", "description": "语法、类型、运算符、输入输出、作用域、STL 基础" },
+    { "id": "data-structure", "name": "数据结构", "description": "数组、链表、栈、队列、树、图、哈希、堆" },
+    { "id": "algorithm", "name": "算法", "description": "排序、二分、递归、贪心、DP、搜索、图论、字符串" },
+    { "id": "math", "name": "数学", "description": "数论、组合数学、概率、进制、逻辑" },
+    { "id": "computer-basics", "name": "计算机基础", "description": "硬件、操作系统、网络、编码、计算机史与人物、竞赛常识" },
+    { "id": "reading", "name": "阅读程序", "description": "程序阅读类专项分类" },
+    { "id": "noi-knowledge", "name": "NOI 相关知识", "description": "历年真题、赛制规则、OI 竞赛常识" }
+  ],
+  "competition_types": [
+    { "id": "csp-j", "name": "CSP-J", "description": "CCF CSP 认证入门级（第一轮笔试）" },
+    { "id": "csp-s", "name": "CSP-S", "description": "CCF CSP 认证提高级（第一轮笔试）" },
+    { "id": "noip", "name": "NOIP", "description": "全国青少年信息学奥林匹克联赛（初赛笔试）" },
+    { "id": "lanqiao", "name": "蓝桥杯", "description": "蓝桥杯全国软件和信息技术专业人才大赛（青少组等笔试环节）" },
+    { "id": "provincial", "name": "省级赛事", "description": "各省信息学竞赛 / 省选相关笔试" },
+    { "id": "municipal", "name": "市级赛事", "description": "市级信息学竞赛笔试" },
+    { "id": "school", "name": "校级赛事", "description": "校内选拔赛 / 校级信息学竞赛" },
+    { "id": "other", "name": "其他", "description": "其他信息学竞赛笔试题目" }
+  ],
+  "difficulty_levels": [
+    { "id": "beginner", "name": "入门", "description": "CSP-J 常规难度" },
+    { "id": "intermediate", "name": "提高", "description": "CSP-J 难题 / CSP-S 常规" },
+    { "id": "advanced", "name": "挑战", "description": "CSP-S 难题 / NOIP 初赛压轴" }
+  ],
+  "questions": [
+    {
+      "id": "q001",
+      "type": "single",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["存储单位", "计算机硬件基础"],
+      "competition_types": ["csp-j", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "计算机中存储信息的最小单位是（ ）。",
+      "options": [
+        { "key": "A", "text": "位（bit）" },
+        { "key": "B", "text": "字节（Byte）" },
+        { "key": "C", "text": "字（Word）" },
+        { "key": "D", "text": "千字节（KB）" }
+      ],
+      "answer": "A",
+      "analysis": "bit（比特）是计算机存储信息的最小单位，只能表示 0 或 1；Byte 是计算机存储的基本单位，1 Byte = 8 bit；字（Word）与机器字长有关，通常为 2 或 4 个字节。"
+    },
+    {
+      "id": "q002",
+      "type": "single",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["ASCII 编码"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "已知大写字母 'A' 的 ASCII 码值为 65，则小写字母 'a' 的 ASCII 码值为（ ）。",
+      "options": [
+        { "key": "A", "text": "96" },
+        { "key": "B", "text": "97" },
+        { "key": "C", "text": "98" },
+        { "key": "D", "text": "65" }
+      ],
+      "answer": "B",
+      "analysis": "ASCII 码表中，小写字母比对应大写字母的码值大 32：'a' = 'A' + 32 = 65 + 32 = 97。该差值用于大小写转换，是常考编码知识点。"
+    },
+    {
+      "id": "q003",
+      "type": "judge",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["存储器", "RAM/ROM"],
+      "competition_types": ["csp-j", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "计算机断电后，随机存取存储器（RAM）中的数据会丢失，而只读存储器（ROM）中的数据不会丢失。（ ）",
+      "answer": true,
+      "analysis": "RAM 是易失性存储器，断电后数据丢失，用来存放正在运行的程序和数据；ROM 是非易失性存储器，断电后数据仍保留，通常用来存放固件（如 BIOS）。"
+    },
+    {
+      "id": "q004",
+      "type": "single",
+      "knowledge_category": "computer-basics",
+      "knowledge_points": ["原码反码补码", "编码"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "在 8 位二进制补码表示法中，-1 的补码是（ ）。",
+      "options": [
+        { "key": "A", "text": "10000001" },
+        { "key": "B", "text": "10000000" },
+        { "key": "C", "text": "11111111" },
+        { "key": "D", "text": "00000001" }
+      ],
+      "answer": "C",
+      "analysis": "补码规则：正数的补码是本身；负数的补码为「原码除符号位外取反再加 1」。+1 的 8 位二进制为 00000001，取反得 11111110，加 1 得 11111111。注意 10000000 是 -128 的补码。"
+    },
+    {
+      "id": "q005",
+      "type": "single",
+      "knowledge_category": "math",
+      "knowledge_points": ["进制转换", "十进制转二进制"],
+      "competition_types": ["csp-j", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "十进制数 13 转换为二进制数是（ ）。",
+      "options": [
+        { "key": "A", "text": "1011" },
+        { "key": "B", "text": "1101" },
+        { "key": "C", "text": "1110" },
+        { "key": "D", "text": "1001" }
+      ],
+      "answer": "B",
+      "analysis": "13 = 8 + 4 + 1 = 2³ + 2² + 2⁰，对应二进制 1101。也可用短除法：13÷2 余 1，6÷2 余 0，3÷2 余 1，1÷2 余 1，从下往上读得 1101。"
+    },
+    {
+      "id": "q006",
+      "type": "single",
+      "knowledge_category": "math",
+      "knowledge_points": ["进制转换", "二进制转十六进制"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "二进制数 10111010 转换为十六进制数是（ ）。",
+      "options": [
+        { "key": "A", "text": "A5" },
+        { "key": "B", "text": "B5" },
+        { "key": "C", "text": "BA" },
+        { "key": "D", "text": "AB" }
+      ],
+      "answer": "C",
+      "analysis": "二进制转十六进制采用「四位一组」：1011 1010。1011 = 8+2+1 = 11 = B，1010 = 8+2 = 10 = A，所以结果为 0xBA。每 4 位二进制对应 1 位十六进制。"
+    },
+    {
+      "id": "q007",
+      "type": "single",
+      "knowledge_category": "math",
+      "knowledge_points": ["组合数学", "组合数"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "从 5 个不同元素中任取 2 个元素的组合数 C(5, 2) 等于（ ）。",
+      "options": [
+        { "key": "A", "text": "10" },
+        { "key": "B", "text": "20" },
+        { "key": "C", "text": "15" },
+        { "key": "D", "text": "5" }
+      ],
+      "answer": "A",
+      "analysis": "组合数公式 C(n, k) = n! / (k!·(n-k)!)。C(5,2) = 5×4 / (2×1) = 10。注意组合不考虑顺序，若问排列数 P(5,2) = 5×4 = 20。"
+    },
+    {
+      "id": "q008",
+      "type": "judge",
+      "knowledge_category": "math",
+      "knowledge_points": ["逻辑运算"],
+      "competition_types": ["csp-j", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "逻辑表达式 (true && false) || true 的值为 true。（ ）",
+      "answer": true,
+      "analysis": "先算括号内：true && false = false；再算 false || true = true。&&（与）只有两边都为真才为真，||（或）只要一边为真即为真。"
+    },
+    {
+      "id": "q009",
+      "type": "single",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["栈", "线性结构"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "栈是一种特殊的线性表，其数据操作的特点是（ ）。",
+      "options": [
+        { "key": "A", "text": "先进先出（FIFO）" },
+        { "key": "B", "text": "后进先出（LIFO）" },
+        { "key": "C", "text": "支持随机存取" },
+        { "key": "D", "text": "只能在两端同时插入删除" }
+      ],
+      "answer": "B",
+      "analysis": "栈只允许在同一端（栈顶）进行插入和删除操作，遵循后进先出（LIFO）；先进先出（FIFO）是队列的特点。入栈出栈序列问题是初赛高频考点。"
+    },
+    {
+      "id": "q010",
+      "type": "single",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["树", "满二叉树"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "深度为 5 的满二叉树（根节点深度为 1）共有（ ）个节点。",
+      "options": [
+        { "key": "A", "text": "15" },
+        { "key": "B", "text": "31" },
+        { "key": "C", "text": "32" },
+        { "key": "D", "text": "63" }
+      ],
+      "answer": "B",
+      "analysis": "满二叉树每层节点数翻倍，第 i 层有 2^(i-1) 个节点。深度为 h 的满二叉树节点总数 = 2^h - 1 = 2^5 - 1 = 31。同理其叶子节点数为 2^(h-1) = 16。"
+    },
+    {
+      "id": "q011",
+      "type": "judge",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["链表", "时间复杂度"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "单链表支持随机访问，查找第 k 个元素的时间复杂度为 O(1)。（ ）",
+      "answer": false,
+      "analysis": "单链表的节点通过指针依次连接，不支持按下标随机访问，查找第 k 个元素必须从头节点开始逐个遍历，时间复杂度为 O(n)；支持 O(1) 随机访问的是数组。"
+    },
+    {
+      "id": "q012",
+      "type": "multiple",
+      "knowledge_category": "data-structure",
+      "knowledge_points": ["线性结构", "数据结构分类"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "下列数据结构中，属于线性结构的有（ ）。",
+      "options": [
+        { "key": "A", "text": "数组" },
+        { "key": "B", "text": "栈" },
+        { "key": "C", "text": "二叉树" },
+        { "key": "D", "text": "队列" },
+        { "key": "E", "text": "图" }
+      ],
+      "answer": ["A", "B", "D"],
+      "analysis": "线性结构指数据元素之间存在一对一的线性关系：数组、链表、栈、队列都是线性结构；二叉树是层次结构（一对多），图是多对多结构，均属非线性结构。多选须全对才得分。"
+    },
+    {
+      "id": "q013",
+      "type": "single",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["二分查找", "时间复杂度"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "在有序数组中用二分查找查找一个元素，其时间复杂度为（ ）。",
+      "options": [
+        { "key": "A", "text": "O(n)" },
+        { "key": "B", "text": "O(n log n)" },
+        { "key": "C", "text": "O(log n)" },
+        { "key": "D", "text": "O(1)" }
+      ],
+      "answer": "C",
+      "analysis": "二分查找每次把查找区间缩小一半：n → n/2 → n/4 → … → 1，共约 log₂n 次，故时间复杂度为 O(log n)。前提是数组必须有序。"
+    },
+    {
+      "id": "q014",
+      "type": "single",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["排序", "冒泡排序"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "对 n 个元素使用冒泡排序，最坏情况下的比较次数为（ ）。",
+      "options": [
+        { "key": "A", "text": "n" },
+        { "key": "B", "text": "n(n-1)/2" },
+        { "key": "C", "text": "n²/2" },
+        { "key": "D", "text": "n log n" }
+      ],
+      "answer": "B",
+      "analysis": "最坏情况（逆序）下，第一趟比较 n-1 次、第二趟 n-2 次、……、最后一趟 1 次，总比较次数 = (n-1)+(n-2)+…+1 = n(n-1)/2，交换次数同样为 n(n-1)/2，时间复杂度 O(n²)。"
+    },
+    {
+      "id": "q015",
+      "type": "judge",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["图论", "最短路", "Dijkstra"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "Dijkstra 算法可以正确处理带负权边的图。（ ）",
+      "answer": false,
+      "analysis": "Dijkstra 算法基于贪心策略，一旦某个节点被确定最短距离就不再更新，负权边会使「已确定」的结论失效，因此不能处理负权边。带负权边的最短路需用 Bellman-Ford 或 SPFA 算法。"
+    },
+    {
+      "id": "q016",
+      "type": "multiple",
+      "knowledge_category": "algorithm",
+      "knowledge_points": ["排序", "排序稳定性"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "下列排序算法中，属于稳定排序的有（ ）。",
+      "options": [
+        { "key": "A", "text": "冒泡排序" },
+        { "key": "B", "text": "快速排序" },
+        { "key": "C", "text": "归并排序" },
+        { "key": "D", "text": "插入排序" },
+        { "key": "E", "text": "堆排序" }
+      ],
+      "answer": ["A", "C", "D"],
+      "analysis": "稳定排序指相等元素排序后相对顺序不变：冒泡、插入、归并是稳定的；快速排序、堆排序、简单选择排序不稳定。多选须全对才得分。"
+    },
+    {
+      "id": "q017",
+      "type": "single",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["运算符", "整除与取模"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "在 C++ 中，设 int 类型变量 a = 7, b = 2，则表达式 a / b 的值是（ ）。",
+      "options": [
+        { "key": "A", "text": "3.5" },
+        { "key": "B", "text": "3" },
+        { "key": "C", "text": "4" },
+        { "key": "D", "text": "2" }
+      ],
+      "answer": "B",
+      "analysis": "两个 int 类型做除法，结果为整数除法，直接截去小数部分：7 / 2 = 3（注意不是四舍五入）。取模运算 7 % 2 = 1。若想得到 3.5，需把操作数转为浮点类型（如 7.0 / 2）。"
+    },
+    {
+      "id": "q018",
+      "type": "single",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["自增运算符", "输入输出"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "在 C++ 中执行以下代码：\n\n```cpp\nint a = 5;\ncout << a++ << endl;\ncout << a << endl;\n```\n\n程序输出为（ ）。",
+      "options": [
+        { "key": "A", "text": "5 5" },
+        { "key": "B", "text": "5 6" },
+        { "key": "C", "text": "6 6" },
+        { "key": "D", "text": "6 5" }
+      ],
+      "answer": "B",
+      "analysis": "a++ 是后置自增：先使用 a 的当前值再自增。所以第一条 cout 输出 5，随后 a 变为 6；第二条 cout 输出 6。最终输出为「5 6」。若用 ++a（前置自增）则先自增再使用。"
+    },
+    {
+      "id": "q019",
+      "type": "judge",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["基本数据类型", "浮点类型"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "在 C++ 中，浮点类型 float 的精度高于 double。（ ）",
+      "answer": false,
+      "analysis": "float 为单精度浮点类型，通常占 4 字节（约 7 位有效数字）；double 为双精度浮点类型，通常占 8 字节（约 15~16 位有效数字）。double 精度高于 float。"
+    },
+    {
+      "id": "q020",
+      "type": "multiple",
+      "knowledge_category": "cplusplus",
+      "knowledge_points": ["标识符", "语法基础"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "下列 C++ 标识符中，合法的是（ ）。",
+      "options": [
+        { "key": "A", "text": "_abc" },
+        { "key": "B", "text": "2abc" },
+        { "key": "C", "text": "abc_1" },
+        { "key": "D", "text": "int" },
+        { "key": "E", "text": "a-b" }
+      ],
+      "answer": ["A", "C"],
+      "analysis": "C++ 标识符规则：由字母、数字、下划线组成，不能以数字开头，不能与关键字重名。_abc 合法（下划线开头允许）；2abc 以数字开头非法；abc_1 合法；int 是关键字非法；a-b 含减号非法。多选须全对才得分。"
+    },
+    {
+      "id": "q021",
+      "type": "reading",
+      "knowledge_category": "reading",
+      "knowledge_points": ["循环", "累加求和"],
+      "competition_types": ["csp-j", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "阅读下列 C++ 程序，回答后面的问题。",
+      "code": "#include <iostream>\nusing namespace std;\nint main() {\n    int n = 10, sum = 0;\n    for (int i = 1; i <= n; i++)\n        sum += i;\n    cout << sum << endl;\n    return 0;\n}",
+      "sub_questions": [
+        {
+          "id": "q021-1",
+          "type": "single",
+          "stem": "程序的输出是（ ）。",
+          "options": [
+            { "key": "A", "text": "45" },
+            { "key": "B", "text": "55" },
+            { "key": "C", "text": "50" },
+            { "key": "D", "text": "100" }
+          ],
+          "answer": "B",
+          "analysis": "程序用 for 循环把 1 到 10 累加到 sum：1+2+…+10 = 10×(10+1)/2 = 55，输出 55。"
+        },
+        {
+          "id": "q021-2",
+          "type": "judge",
+          "stem": "若将第 3 行中的 n = 10 改为 n = 100，则程序输出为 5050。（ ）",
+          "answer": true,
+          "analysis": "累加 1 到 100：100×(100+1)/2 = 5050，与等差数列求和公式一致，判断正确。"
+        }
+      ],
+      "answer": ["B", true],
+      "analysis": "本题考查 for 循环的累加逻辑与等差数列求和。第 1 小题输出 55；第 2 小题 n 改为 100 后输出 5050。"
+    },
+    {
+      "id": "q022",
+      "type": "reading",
+      "knowledge_category": "reading",
+      "knowledge_points": ["递归", "斐波那契"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "阅读下列 C++ 程序，回答后面的问题。",
+      "code": "#include <iostream>\nusing namespace std;\nint fib(int n) {\n    if (n <= 2) return 1;\n    return fib(n - 1) + fib(n - 2);\n}\nint main() {\n    cout << fib(5) << endl;\n    return 0;\n}",
+      "sub_questions": [
+        {
+          "id": "q022-1",
+          "type": "single",
+          "stem": "程序的输出是（ ）。",
+          "options": [
+            { "key": "A", "text": "3" },
+            { "key": "B", "text": "5" },
+            { "key": "C", "text": "8" },
+            { "key": "D", "text": "13" }
+          ],
+          "answer": "B",
+          "analysis": "递归求斐波那契数列：fib(1)=1，fib(2)=1，fib(3)=2，fib(4)=3，fib(5)=fib(4)+fib(3)=3+2=5。"
+        },
+        {
+          "id": "q022-2",
+          "type": "judge",
+          "stem": "该程序计算 fib(30) 的时间复杂度为 O(n)。（ ）",
+          "answer": false,
+          "analysis": "朴素递归每次调用会展开成两个子调用，fib(n) 的调用次数约为 2^n 量级，时间复杂度为指数级 O(2^n)，存在大量重复计算。改用带记忆化或递推后才是 O(n)。"
+        }
+      ],
+      "answer": ["B", false],
+      "analysis": "本题考查递归函数与斐波那契数列。第 1 小题 fib(5)=5；第 2 小题朴素递归求 fib(30) 是指数级复杂度，判断错误。"
+    },
+    {
+      "id": "q023",
+      "type": "reading",
+      "knowledge_category": "reading",
+      "knowledge_points": ["冒泡排序", "数组", "双重循环"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "intermediate",
+      "source": "自编（真题风格）",
+      "stem": "阅读下列 C++ 程序，回答后面的问题。",
+      "code": "#include <iostream>\nusing namespace std;\nint main() {\n    int a[5] = {5, 3, 4, 1, 2};\n    for (int i = 0; i < 4; i++)\n        for (int j = 0; j < 4 - i; j++)\n            if (a[j] > a[j + 1]) {\n                int t = a[j];\n                a[j] = a[j + 1];\n                a[j + 1] = t;\n            }\n    for (int i = 0; i < 5; i++)\n        cout << a[i] << \" \";\n    cout << endl;\n    return 0;\n}",
+      "sub_questions": [
+        {
+          "id": "q023-1",
+          "type": "single",
+          "stem": "程序的输出是（ ）。",
+          "options": [
+            { "key": "A", "text": "5 4 3 2 1" },
+            { "key": "B", "text": "1 2 3 4 5" },
+            { "key": "C", "text": "3 5 4 1 2" },
+            { "key": "D", "text": "5 3 4 1 2" }
+          ],
+          "answer": "B",
+          "analysis": "这是标准的冒泡排序实现：外层循环控制趟数，内层循环把较大元素逐趟「冒泡」到末尾。原数组 {5,3,4,1,2} 排序后为 {1,2,3,4,5}，输出 1 2 3 4 5。"
+        },
+        {
+          "id": "q023-2",
+          "type": "judge",
+          "stem": "该程序的功能是把数组按升序排序。（ ）",
+          "answer": true,
+          "analysis": "相邻元素比较，若前一个大于后一个则交换，最终小元素在前、大元素在后，实现升序排列，判断正确。"
+        }
+      ],
+      "answer": ["B", true],
+      "analysis": "本题考查冒泡排序与双重循环。第 1 小题输出升序序列 1 2 3 4 5；第 2 小题功能判断正确。"
+    },
+    {
+      "id": "q024",
+      "type": "single",
+      "knowledge_category": "noi-knowledge",
+      "knowledge_points": ["赛制规则", "CSP 认证"],
+      "competition_types": ["csp-j", "csp-s"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "关于 CSP-J/S 认证，下列说法正确的是（ ）。",
+      "options": [
+        { "key": "A", "text": "CSP-J/S 第一轮为上机编程考试，直接评测程序" },
+        { "key": "B", "text": "CSP-J/S 第一轮为笔试（含单选题、判断题、阅读程序题等），第二轮为上机编程" },
+        { "key": "C", "text": "CSP-J/S 只有一轮考试" },
+        { "key": "D", "text": "CSP-J/S 面向大学生开放报名" }
+      ],
+      "answer": "B",
+      "analysis": "CSP-J/S 认证分两轮：第一轮为笔试（部分地区机考笔试），题型以单选、判断、阅读程序、完善程序为主，主要考察基础知识；第二轮为上机编程。CSP-J 面向初中及以下学生，CSP-S 主要面向高中生，均为中小学生赛事。"
+    },
+    {
+      "id": "q025",
+      "type": "judge",
+      "knowledge_category": "noi-knowledge",
+      "knowledge_points": ["NOI 赛事", "OI 竞赛常识"],
+      "competition_types": ["csp-j", "csp-s", "noip"],
+      "difficulty": "beginner",
+      "source": "自编（真题风格）",
+      "stem": "NOI（全国青少年信息学奥林匹克竞赛）是国内最高级别的信息学竞赛，也是选拔中国队参加国际信息学奥林匹克竞赛（IOI）的重要途径。（ ）",
+      "answer": true,
+      "analysis": "NOI 是中国计算机学会主办的最高级别青少年信息学竞赛；NOI 优胜选手经国家队选拔（含冬令营等环节）组成中国队参加 IOI，判断正确。"
+    },
+    {
+      "id": "q026",
+      "type": "single",
+      "knowledge_category": "noi-knowledge",
+      "knowledge_points": ["Pascal 语法", "历史真题"],
+      "competition_types": ["noip"],
+      "difficulty": "intermediate",
+      "source": "NOIP 初赛真题改编",
+      "year": 2013,
+      "stem": "（历史真题风格）Pascal 语言中，表示「不等于」的关系运算符是（ ）。注：Pascal 曾是 NOI 系列赛事指定语言之一（现已退出），本题保留历史题风。",
+      "options": [
+        { "key": "A", "text": "=" },
+        { "key": "B", "text": "<>" },
+        { "key": "C", "text": "!=" },
+        { "key": "D", "text": "==" }
+      ],
+      "answer": "B",
+      "analysis": "Pascal 中「不等于」写作 <>；「等于」写作 =。C/C++ 系语言中「不等于」为 !=，「等于」为 ==，「赋值」为 =，注意区分两种语言体系的运算符差异。"
+    }
+  ]
+}

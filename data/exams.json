@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "name": "模拟考试卷种子数据",
+    "description": "固定卷（is_auto_generated=false），按竞赛类型配置；题目 id 引用 data/questions.json 与 data/questions-extra.json 题库",
+    "created_at": "2025-01-02",
+    "total_exams": 5
+  },
+  "exams": [
+    {
+      "id": "exam-001",
+      "title": "CSP-J 入门级模拟卷（第一轮）",
+      "competition_type": "csp-j",
+      "duration_minutes": 120,
+      "question_ids": ["q001", "q002", "q005", "q008", "q009", "q013", "q017", "q020", "q021", "q024", "q104", "q112"],
+      "is_auto_generated": false,
+      "total_score": 14,
+      "unanswered_as_wrong": true,
+      "created_at": "2025-01-02T00:00:00.000Z"
+    },
+    {
+      "id": "exam-002",
+      "title": "CSP-S 提高级模拟卷（第一轮）",
+      "competition_type": "csp-s",
+      "duration_minutes": 120,
+      "question_ids": ["q004", "q006", "q007", "q010", "q012", "q014", "q015", "q016", "q018", "q022", "q023", "q108"],
+      "is_auto_generated": false,
+      "total_score": 16,
+      "unanswered_as_wrong": true,
+      "created_at": "2025-01-02T00:00:00.000Z"
+    },
+    {
+      "id": "exam-003",
+      "title": "NOIP 初赛模拟卷（笔试）",
+      "competition_type": "noip",
+      "duration_minutes": 120,
+      "question_ids": ["q003", "q004", "q006", "q007", "q011", "q015", "q019", "q023", "q025", "q026"],
+      "is_auto_generated": false,
+      "total_score": 11,
+      "unanswered_as_wrong": true,
+      "created_at": "2025-01-02T00:00:00.000Z"
+    },
+    {
+      "id": "exam-004",
+      "title": "蓝桥杯青少组模拟卷",
+      "competition_type": "lanqiao",
+      "duration_minutes": 60,
+      "question_ids": ["q101", "q102", "q103", "q104", "q105", "q106", "q110", "q112"],
+      "is_auto_generated": false,
+      "total_score": 9,
+      "unanswered_as_wrong": true,
+      "created_at": "2025-01-02T00:00:00.000Z"
+    },
+    {
+      "id": "exam-005",
+      "title": "自动交卷测试卷（6 秒，用于验证超时自动交卷）",
+      "competition_type": "csp-j",
+      "duration_minutes": 0.1,
+      "question_ids": ["q001", "q002", "q003"],
+      "is_auto_generated": false,
+      "total_score": 3,
+      "unanswered_as_wrong": true,
+      "created_at": "2025-01-02T00:00:00.000Z"
+    }
+  ]
+}

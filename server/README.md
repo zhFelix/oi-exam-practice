@@ -6,17 +6,26 @@
 
 ```bash
 cd D:\Felix\project\oi-exam-practice
-npm install          # 安装依赖（express / jsonwebtoken / bcryptjs）
+npm install          # 安装依赖（express / jsonwebtoken / bcryptjs / @supabase/supabase-js）
 npm start            # 启动（默认端口 3000，环境变量 PORT 可覆盖）
 npm run dev          # 开发模式（Node --watch 热重启）
 npm test             # 判分核心单元测试
 npm run smoke        # 接口冒烟测试（需先启动服务；BASE_URL 可覆盖）
+npm run migrate:supabase  # Supabase 种子数据迁移（需先配置 SUPABASE_URL/SUPABASE_KEY）
 ```
 
 - 题库数据：启动时自动合并加载 `data/questions.json`（26 题）+ `data/questions-extra.json`（34 题，含 q040~q060 第二批扩充题），按 `id` 去重，共 **60 题**；模拟卷加载 `data/exams.json`（5 套卷）。
 - 运行期数据：`data/users.json` / `data/answers.json` / `data/wrong-book.json` / `data/exam-sessions.json` / `data/exam-results.json` 由服务自动创建（内存缓存 + 同步落盘，临时文件 + rename 原子替换）。
 - 前端静态托管：存在 `public/` 时托管 `public/`（回退 `web/`），`GET /` 返回 SPA 入口。
-- 环境变量：`PORT`（默认 3000）、`JWT_SECRET`（**生产必须设置**；未设置时用开发默认值并打警告日志）、`AUTH_RATE_LIMIT_MAX`（登录/注册限流次数，默认 20）。
+- 环境变量：`PORT`（默认 3000）、`JWT_SECRET`（**生产必须设置**；未设置时用开发默认值并打警告日志）、`AUTH_RATE_LIMIT_MAX`（登录/注册限流次数，默认 20）、`SUPABASE_URL` / `SUPABASE_SERVICE_KEY`（Supabase 配置，详见 `docs/supabase.md`）。**项目根 `.env` 会被自动加载**（`server/utils/load-env.js`，不覆盖已有环境变量；`.env` 已被 .gitignore 排除）。
+
+## Supabase 集成（t11 框架 + t12 存储替换，已完成）
+
+- **存储层已替换**（t12）：`server/store/collections.js` 启动时选择存储后端——Supabase 可用则 `SupabaseStore`（`server/store/supabase-store.js`，内存缓存 + 异步持久化，接口与 DataStore 一致），否则回退 JSON `DataStore`；题库/试卷启动时优先从 Supabase `questions`/`exams` 表读取，失败回退数据文件（枚举定义始终来自数据文件）。业务路由零改动。
+- `server/store/supabase.js`：`createClient` 单例（导出 `supabase` 与 `isSupabaseConfigured` 标志；`auth.persistSession=false`；后端用 service_role key）。
+- `docs/supabase.md`：建表 SQL（7 张表，id 文本主键、结构字段 jsonb）+ 配置/迁移/阶段 2 说明。
+- `scripts/migrate-to-supabase.mjs`（`npm run migrate:supabase`）：合并读取 60 题 + 5 套卷，按 id upsert 到 `questions` / `exams`（幂等可重复执行；`score/question_count/total_score` 实时计算；未配置真实凭据时直接退出并提示）。
+- 验证：Supabase 模式与 JSON 降级模式 `npm run smoke` 均 **61/61 通过**（真实凭据实测）。
 
 ## 目录结构
 
@@ -42,9 +51,11 @@ server/
 │   ├── grader.js         # 判分核心（4 题型统一规则）
 │   └── wrong-book-service.js # 错题本状态机（入本/连对/自动移出）
 ├── store/
-│   ├── datastore.js      # 通用 JSON 文件集合（内存 + 同步落盘）
-│   └── collections.js    # 集合封装 + 题库/模拟卷加载（questions + extra + exams）
-├── utils/                # id 生成 / JWT / bcrypt 封装
+│   ├── datastore.js      # 通用 JSON 文件集合（内存 + 同步落盘，降级后端）
+│   ├── supabase-store.js # Supabase 存储实现（内存缓存 + 异步持久化，接口与 DataStore 一致）
+│   ├── supabase.js       # Supabase 客户端单例（service_role）
+│   └── collections.js    # 存储后端选择（Supabase 优先/JSON 降级）+ 题库/模拟卷加载
+├── utils/                # id 生成 / JWT / bcrypt / .env 加载
 └── __tests__/
     └── grader.test.js    # 判分单元测试（node:test，9 用例）
 ```

@@ -13,7 +13,8 @@ import { createRequire } from "module";
 import { readFileSync } from "fs";
 
 const PROJECT = "D:/Felix/project/oi-exam-practice";
-const BASE = "http://localhost:3000";
+/** 被测后端地址（可用环境变量 E2E_BASE 覆盖，如 JSON 模式 3000 / Supabase 模式 3100） */
+const BASE = process.env.E2E_BASE || "http://localhost:3000";
 const require = createRequire(import.meta.url);
 const { JSDOM } = require(process.env.TMP + "/oi-jsdom-test/node_modules/jsdom");
 
@@ -78,7 +79,7 @@ console.log(`\n[1] 启动（真实后端，用户 ${uname}）`);
 await import(`file:///${PROJECT}/public/js/app.js`);
 await sleep(500);
 assert(app().innerHTML.includes("题库"), "首页渲染");
-await waitFor(() => text("#total-num") === "39", "题库总数 = 39（真实后端合并题库）");
+await waitFor(() => text("#total-num") === "60", "题库总数 = 60（真实后端合并题库）");
 assert(app().querySelectorAll(".q-list-item").length === 20, "第 1 页 20 条");
 assert(document.querySelector("#nav-user a[href='#/profile']") !== null, "登录态恢复，导航显示用户名");
 

@@ -22,7 +22,7 @@
 | --- | --- |
 | 前端 | 原生 HTML5 + CSS3 + 原生 JavaScript（ES Modules），hash 路由单页应用，零构建、零运行时依赖 |
 | 后端 | Node.js（≥18）+ Express 4 |
-| 数据存储 | JSON 文件存储（自封装 DataStore：内存缓存 + 原子落盘），题库与代码分离 |
+| 数据存储 | **双模式**：JSON 文件存储（自封装 DataStore，零依赖默认）/ Supabase（PostgreSQL + PostgREST，可选，配置后自动启用） |
 | 认证 | jsonwebtoken（JWT，7 天有效期）+ bcryptjs 密码哈希 |
 | 测试 | Node 内置 test runner（单元测试）+ 自研冒烟/集成脚本 |
 
@@ -30,21 +30,24 @@
 
 ```
 oi-exam-practice/
-├── package.json            # 依赖与脚本（start/dev/test/smoke）
+├── package.json            # 依赖与脚本（start/dev/test/smoke/migrate:supabase）
 ├── README.md               # 本文档
-├── docs/                   # 项目文档（PRD / 架构 / UI / 数据模型 / 测试报告 / 交付总结）
+├── .env.example            # 环境变量示例（复制为 .env 后填写；.env 已被 git 忽略）
+├── docs/                   # 项目文档（PRD / 架构 / UI / 数据模型 / 测试报告 / Supabase / 交付总结）
 │   ├── requirements.md     # 产品需求文档（PRD）
 │   ├── architecture.md     # 技术架构设计
 │   ├── ui-design.md        # UI/UX 设计规范与页面线框
 │   ├── data-model.md       # 题库数据结构设计
 │   ├── test-report.md      # 集成联调与测试验收报告
+│   ├── supabase.md         # Supabase 集成设计（表结构/双模式/迁移/RLS 建议）
+│   ├── supabase-test-report.md # Supabase 集成验收测试报告
 │   └── summary.md          # 交付总结
-├── data/                   # 数据文件（即"数据库"）
+├── data/                   # 数据文件（JSON 模式的数据源/兜底）
 │   ├── questions.json      # 种子题库（26 题，CSP-J/S 与 NOIP 风格）
-│   ├── questions-extra.json# 扩展题库（13 题，蓝桥杯/省市校级等）
+│   ├── questions-extra.json# 扩展题库（34 题，含 q040~q060 与蓝桥杯/省市校级等）
 │   ├── exams.json          # 模拟卷（5 套，含 6 秒自动交卷测试卷）
 │   └── users.json / answers.json / wrong-book.json /
-│       exam-results.json / exam-sessions.json   # 运行时生成（可删除重置）
+│       exam-results.json / exam-sessions.json   # JSON 模式运行时生成（可删除重置）
 ├── public/                 # 前端静态资源（Express 托管）
 │   ├── index.html          # SPA 唯一入口
 │   ├── css/                # base.css（设计令牌） + main.css（组件/页面样式）
@@ -57,11 +60,13 @@ oi-exam-practice/
 │   ├── routes/             # auth / meta / questions / practice / exams /
 │   │                       # wrong-book / stats + helpers
 │   ├── services/           # grader（判分核心）/ wrong-book-service（错题状态机）
-│   ├── store/              # datastore（JSON 存储）/ collections（集合封装）
-│   ├── utils/              # id / jwt / password
+│   ├── store/              # datastore（JSON 存储）/ supabase-store（Supabase 存储）/
+│   │                       # supabase（客户端单例）/ collections（双模式选择）
+│   ├── utils/              # id / jwt / password / load-env（.env 加载）
 │   └── __tests__/          # 判分单元测试
 └── scripts/                # smoke.js（后端冒烟）、smoke-frontend.mjs（mock 冒烟）、
-                            # render-test.mjs / e2e-real.mjs（jsdom 集成测试）、preview.mjs
+                            # render-test.mjs / e2e-real.mjs（jsdom 集成测试）、
+                            # migrate-to-supabase.mjs（Supabase 种子迁移）、supabase-schema.sql
 ```
 
 ## 快速开始
@@ -69,13 +74,16 @@ oi-exam-practice/
 前置要求：**Node.js ≥ 18**（开发验证环境为 Node 24）。
 
 ```bash
-# 1. 安装依赖（express / jsonwebtoken / bcryptjs，无原生编译依赖）
+# 1. 安装依赖（express / jsonwebtoken / bcryptjs / @supabase/supabase-js，无原生编译依赖）
 npm install
 
-# 2. 启动后端（同时托管前端页面，默认端口 3000）
+# 2.（可选）配置环境变量：复制示例并按需填写（不配 Supabase 则使用 JSON 文件存储）
+#    copy .env.example .env   （Windows: copy .env.example .env）
+
+# 3. 启动后端（同时托管前端页面，默认端口 3000）
 npm start
 
-# 3. 浏览器访问
+# 4. 浏览器访问
 #    http://localhost:3000
 ```
 
@@ -92,16 +100,24 @@ npm run dev
 | `npm start` | 启动服务（生产/本地） |
 | `npm run dev` | watch 模式开发启动 |
 | `npm test` | 判分核心单元测试（9 项） |
-| `npm run smoke` | 后端接口冒烟测试（**需先启动服务**，60 项） |
+| `npm run smoke` | 后端接口冒烟测试（**需先启动服务**，61 项） |
+| `npm run migrate:supabase` | Supabase 种子数据迁移（60 题 + 5 卷，幂等；需先配置凭据） |
 | `node scripts/smoke-frontend.mjs` | 前端 mock 模式数据流冒烟（34 项） |
 | `node scripts/render-test.mjs` | jsdom 前端渲染集成测试（26 项，需临时安装 jsdom，见脚本头注释） |
 | `node scripts/e2e-real.mjs` | jsdom 前端 × 真实后端 E2E（21 项，需先启动服务 + jsdom） |
 
 ### 数据说明
 
-- 题库与试卷直接读取 `data/questions.json` + `data/questions-extra.json`（启动时按 `id` 去重合并）与 `data/exams.json`，**扩充题库只需向数据文件追加题目**，无需改代码。
-- `data/users.json`、`answers.json`、`wrong-book.json`、`exam-results.json`、`exam-sessions.json` 由运行时自动生成/写入；想重置环境删除这些文件即可。
+- **双模式存储**：默认使用 JSON 文件存储（`data/*.json`，零依赖）；在 `.env` 配置 `SUPABASE_URL` + `SUPABASE_SERVICE_KEY`（service_role key，仅后端）后，服务自动切换为 **Supabase 存储模式**（题库/试卷/用户/答题/错题/考试数据存 PostgreSQL），Supabase 不可用或未配置时自动回退 JSON。详见 [docs/supabase.md](docs/supabase.md)。
+- 题库与试卷读取 `data/questions.json` + `data/questions-extra.json`（启动时按 `id` 去重合并，共 **60 题**）与 `data/exams.json`（5 套卷）；**扩充题库只需向数据文件追加题目**，无需改代码。
+- JSON 模式下 `data/users.json`、`answers.json`、`wrong-book.json`、`exam-results.json`、`exam-sessions.json` 由运行时自动生成/写入；想重置环境删除这些文件即可。
 - 竞赛类型为**通用可扩展枚举**：在数据文件顶层 `competition_types` 追加一条记录并引用其 id，筛选标签与模拟卷入口即自动出现（元数据接口驱动，无需改前端）。
+
+## Supabase 集成（可选）
+
+- **启用**：复制 `.env.example` 为 `.env`，填入 `SUPABASE_URL` 与 `SUPABASE_SERVICE_KEY`；在 Supabase SQL Editor 执行 `scripts/supabase-schema.sql`（7 张表，幂等）；运行 `npm run migrate:supabase` 导入种子数据（60 题 + 5 卷，幂等可重复执行）。
+- **行为**：启动时题库/试卷优先从 Supabase 读取，运行期集合（用户/答题/错题/会话/成绩）写入 Supabase（内存缓存 + 串行落库 + 优雅退出排空）；未配置或连接失败自动回退 JSON 文件，业务功能与 API 契约完全不变。
+- **安全**：`SUPABASE_SERVICE_KEY` 为 service_role key（绕过 RLS），只能存在于后端环境变量，严禁进入前端/仓库/日志；`.env` 已被 .gitignore 排除；建议上线前启用 RLS 纵深防御（见 docs/supabase.md §6.4）。
 
 ## 使用说明
 
@@ -126,6 +142,8 @@ npm run dev
 | [docs/ui-design.md](docs/ui-design.md) | UI/UX 设计规范与页面线框 |
 | [docs/data-model.md](docs/data-model.md) | 题库数据结构设计（字段/枚举/判分规则） |
 | [docs/test-report.md](docs/test-report.md) | 集成联调与测试验收报告（163+ 项检查、已修复缺陷、遗留问题） |
+| [docs/supabase.md](docs/supabase.md) | Supabase 集成设计（表结构、双模式存储、迁移、RLS 建议） |
+| [docs/supabase-test-report.md](docs/supabase-test-report.md) | Supabase 集成验收测试报告 |
 | [docs/summary.md](docs/summary.md) | 交付总结（协作过程、完成情况、已知限制、迭代建议） |
 
 ---

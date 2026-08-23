@@ -116,6 +116,21 @@ function processInline(text) {
   return s;
 }
 
+/**
+ * 行内渲染（用于选项文本等单行场景）：LaTeX 公式（$...$ / $$...$$）+ 行内 Markdown，
+ * 不做块级包装（不产生 <p>/<ul>/<h>），避免块级元素嵌套进 <span> 破坏 DOM 结构。
+ * 安全：与 renderMarkdown 一致——公式经 KaTeX 安全渲染，其余文本先转义。
+ */
+export function renderInline(text) {
+  if (!text) return "";
+  const tokens = [];
+  let src = String(text);
+  src = src.replace(/\$\$([\s\S]+?)\$\$/g, (m, tex) => pushToken(tokens, renderLatex(tex, false)));
+  src = src.replace(/\$([^$\n]+?)\$/g, (m, tex) => pushToken(tokens, renderLatex(tex, false)));
+  const html = processInline(src);
+  return html.replace(new RegExp(PH + "(\\d+)" + PH, "g"), (m, i) => tokens[Number(i)] || "");
+}
+
 /** KaTeX 渲染：失败或未加载时转义原文兜底 */
 function renderLatex(tex, displayMode) {
   const source = tex.trim();

@@ -128,6 +128,12 @@ assert(!renderMarkdown("[x](javascript:alert(1))").includes("<a "), "伪协议�
 assert(!renderMarkdown("<script>alert(1)</script>").includes("<script>"), "原始 HTML 不渲染（XSS 安全）");
 assert(renderMarkdown("```cpp\nint a = 1; // $O(n)$\n```").includes("$O(n)$") && !renderMarkdown("```x\n$y$\n```").includes("katex"), "代码块内 $...$ 不解析");
 assert(renderMarkdown("**加粗** 与 `code` 回归正常").includes("<strong>加粗</strong>"), "原有语法回归（加粗/行内代码）");
+// 行内渲染（选项文本路径，t16 验收修复）：公式渲染、无块级嵌套、XSS 安全
+const { renderInline } = await import("../public/js/utils.js");
+const ri = renderInline("$\\binom{5}{2}=10$ 且 **加粗**");
+assert(ri.includes('class="katex"') && !ri.includes("$"), "选项行内公式 renderInline 渲染且无残留 $");
+assert(!ri.includes("<p>") && !ri.includes("<ul>"), "renderInline 无块级包装（span 内合法）");
+assert(!renderInline("<script>alert(1)</script>").includes("<script>"), "renderInline 原始 HTML 不渲染（XSS 安全）");
 
 console.log(`\n===== 冒烟测试结果：通过 ${pass} 项，失败 ${fail} 项 =====`);
 process.exit(fail ? 1 : 0);

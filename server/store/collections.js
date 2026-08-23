@@ -168,7 +168,7 @@ export async function initExams() {
   exams.length = 0;
   if (isSupabaseConfigured) {
     try {
-      const { data, error } = await supabase.from('exams').select('*');
+      const { data, error } = await supabase.from('exams').select('*').order('id');
       if (!error && Array.isArray(data)) {
         for (const e of data) {
           // DB 行用 rules jsonb 存规则；回填 unanswered_as_wrong 供路由复用

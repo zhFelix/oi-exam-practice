@@ -31,7 +31,7 @@ public/
 
 ## Markdown / LaTeX 支持语法
 
-题目题干（`stem`）、解析（`analysis`）、子题内容统一由 `js/utils.js` 的 `renderMarkdown` 渲染，支持：
+题目题干（`stem`）、解析（`analysis`）、子题内容统一由 `js/utils.js` 的 `renderMarkdown` 渲染；**选项文本（`options[].text`）由 `renderInline` 渲染**（同样的公式/行内 Markdown 语法，但不做块级包装，保证 `<span>` 内 DOM 合法），支持：
 
 | 语法 | 说明 |
 | --- | --- |

@@ -8,7 +8,7 @@
    规范来源：docs/ui-design.md §3 组件规范
    ============================================================ */
 
-import { escapeHtml, renderMarkdown, TYPE_NAMES, DIFF_NAMES, diffDots, hasAnyAnswer, hasAllAnswer } from "./utils.js";
+import { escapeHtml, renderMarkdown, renderInline, TYPE_NAMES, DIFF_NAMES, diffDots, hasAnyAnswer, hasAllAnswer } from "./utils.js";
 
 /* ================= Toast ================= */
 
@@ -393,7 +393,7 @@ function renderUnitBody(unit, unitIdx, mode, parentType) {
       ${options.map((o) => `
         <div class="${cls}" data-unit="${unitIdx}" data-opt="${escapeHtml(o.key)}"${noInteract} role="${isMultiple ? "checkbox" : "radio"}" aria-checked="false" tabindex="0">
           <span class="opt-key">${escapeHtml(o.key)}</span>
-          <span class="opt-text">${escapeHtml(o.text)}</span>
+          <span class="opt-text">${renderInline(o.text)}</span>
           <span class="opt-flag"></span>
         </div>`).join("")}
     </div>`;

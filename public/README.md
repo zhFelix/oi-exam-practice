@@ -61,7 +61,8 @@ node scripts/preview.mjs        # 默认端口 4173
 
 没有后端时，前端自动进入**本地演示模式**（`js/mock.js`）：
 
-- 注册/登录（内置演示账号 `demo` / `123456`，登录页有提示）；
+- 注册/登录（登录标识为**邮箱**，内置演示账号 `demo@example.com` / `123456`，登录页有提示）；
+- 注册字段：邮箱（登录账号）+ 昵称（显示名）+ 密码 + 确认密码；
 - 题库筛选、练习判分、模拟考试（限时/答题卡/成绩报告）、错题本、统计全部可用；
 - 数据持久化在浏览器 `localStorage`（key：`oi_mock_db`），刷新不丢。
 
@@ -88,7 +89,9 @@ node scripts/preview.mjs        # 默认端口 4173
 | `GET /api/exams/results/:resultId` | 成绩报告（逐题对错 + 解析） |
 | `GET /api/wrong-book` | 错题列表；`POST /api/wrong-book/review` 重练；`DELETE /api/wrong-book/:questionId` 移除 |
 | `GET /api/stats/overview` · `categories` · `types` | 学习统计 |
-| `POST /api/auth/register` · `login` · `GET /api/auth/me` | 用户系统（JWT 存 `localStorage.oi_token`） |
+| `POST /api/auth/register` | 注册（Supabase Auth 代理）：`{email, username, password, confirmPassword}` → `{token, user:{id, username, email}}`，注册即登录 |
+| `POST /api/auth/login` | 登录：`{email, password}` → `{token, user:{id, username, email}}`（登录标识为**邮箱**；失败统一 401 提示"用户名或密码错误"） |
+| `GET /api/auth/me` | 当前用户 `{id, username, email}`（JWT 存 `localStorage.oi_token`，请求头 `Authorization: Bearer <token>` 不变） |
 
 **多选筛选约定**：知识点 `category` 与题型 `type` 支持多选，前端以逗号拼接传参（如 `category=math,algorithm`、`type=single,judge`），请后端兼容逗号分隔解析（或先支持单值，前端多选功能依赖此项）。
 
@@ -121,7 +124,7 @@ node scripts/preview.mjs        # 默认端口 4173
 项目提供两套零业务依赖的验证脚本（无需安装任何 npm 包即可运行逻辑测试）：
 
 ```bash
-node scripts/smoke-frontend.mjs   # 逻辑冒烟测试：mock 后端全数据流（注册/筛选/判分/考试/错题/统计），34 项断言
+node scripts/smoke-frontend.mjs   # 逻辑冒烟测试：mock 后端全数据流（注册/筛选/判分/考试/错题/统计/Markdown），50 项断言
 ```
 
 页面渲染集成测试（jsdom，需临时安装到系统临时目录，**不进入项目依赖**）：
@@ -129,7 +132,7 @@ node scripts/smoke-frontend.mjs   # 逻辑冒烟测试：mock 后端全数据流
 ```bash
 npm install jsdom --prefix $env:TEMP\oi-jsdom-test --cache $env:TEMP\oi-jsdom-test\.npm-cache
 Copy-Item scripts\render-test.mjs $env:TEMP\oi-jsdom-test\
-node $env:TEMP\oi-jsdom-test\render-test.mjs   # 26 项断言：首页→登录→练习→模拟考→错题本→统计
+node $env:TEMP\oi-jsdom-test\render-test.mjs   # 35 项断言：首页→登录→练习→模拟考→错题本→统计→LaTeX
 ```
 
 ## 设计规范落地

@@ -13,8 +13,11 @@ import { MOCK_BANK } from "./mock-data.js";
 const DB_KEY = "oi_mock_db";
 const TOKEN_KEY = "oi_token";
 
-/** 演示账号（登录页会提示，方便无后端演示） */
-const DEMO_USER = { id: "u_demo", username: "demo", password: "123456", created_at: new Date().toISOString() };
+/** 演示账号（登录页会提示，方便无后端演示；t18 起登录标识为邮箱） */
+const DEMO_USER = { id: "u_demo", username: "demo", email: "demo@example.com", password: "123456", created_at: new Date().toISOString() };
+
+/** 邮箱格式（与后端 EMAIL_PATTERN 一致） */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /* ---------- 基础数据访问 ---------- */
 
@@ -24,8 +27,10 @@ function loadDB() {
     const raw = localStorage.getItem(DB_KEY);
     if (raw) {
       const saved = JSON.parse(raw);
-      // 保证 demo 账号始终存在
-      if (!saved.users || !saved.users.some((u) => u.username === DEMO_USER.username)) saved.users.unshift(DEMO_USER);
+      // 保证 demo 账号始终存在（按邮箱匹配；旧数据可能只有 username，补上 email）
+      const hasDemo = (saved.users || []).some((u) => u.email === DEMO_USER.email || u.username === DEMO_USER.username);
+      if (!hasDemo) saved.users.unshift(DEMO_USER);
+      else (saved.users || []).forEach((u) => { if (u.username === DEMO_USER.username && !u.email) u.email = DEMO_USER.email; });
       return Object.assign(d, saved);
     }
   } catch (e) {
@@ -59,8 +64,8 @@ function fail(status, code, message) {
 
 function currentUser(db) {
   const token = localStorage.getItem(TOKEN_KEY) || "";
-  const username = token.replace(/^mock_/, "");
-  return db.users.find((u) => u.username === username) || null;
+  const email = token.replace(/^mock_/, "");
+  return db.users.find((u) => u.email === email) || null;
 }
 
 /* ---------- 判分核心（与架构 §7.2 对齐） ---------- */
@@ -264,31 +269,38 @@ export const MockBackend = {
     const db = loadDB();
     const user = currentUser(db);
 
-    // ===== 认证 =====
+    // ===== 认证（t18：登录标识为 email，username 为昵称/显示名） =====
     if (method === "POST" && path === "/auth/register") {
-      const { username, password, confirmPassword } = body || {};
-      if (!username || !/^[A-Za-z0-9_]{3,20}$/.test(username)) throw fail(400, "INVALID_USERNAME", "用户名需为 3~20 位字母、数字或下划线");
+      const { email, username, password, confirmPassword } = body || {};
+      const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+      if (!EMAIL_PATTERN.test(normalizedEmail)) throw fail(400, "INVALID_EMAIL", "邮箱格式不正确");
+      if (!username || !/^[A-Za-z0-9_]{3,20}$/.test(username)) throw fail(400, "INVALID_USERNAME", "昵称需为 3~20 位字母、数字或下划线");
       if (!password || password.length < 6) throw fail(400, "WEAK_PASSWORD", "密码至少 6 位");
       if (password !== confirmPassword) throw fail(400, "PASSWORD_MISMATCH", "两次输入的密码不一致");
-      if (db.users.some((u) => u.username === username)) throw fail(409, "USERNAME_TAKEN", "用户名已存在");
-      const nu = { id: mkId("u_"), username, password, created_at: new Date().toISOString() };
+      if (db.users.some((u) => u.email === normalizedEmail)) throw fail(409, "EMAIL_TAKEN", "该邮箱已被注册");
+      if (db.users.some((u) => u.username === username)) throw fail(409, "USERNAME_TAKEN", "昵称已被占用");
+      const nu = { id: mkId("u_"), username, email: normalizedEmail, password, created_at: new Date().toISOString() };
       db.users.push(nu);
       saveDB(db);
-      localStorage.setItem(TOKEN_KEY, `mock_${username}`);
-      return { token: `mock_${username}`, user: { id: nu.id, username: nu.username } };
+      localStorage.setItem(TOKEN_KEY, `mock_${normalizedEmail}`);
+      return { token: `mock_${normalizedEmail}`, user: { id: nu.id, username: nu.username, email: nu.email } };
     }
 
     if (method === "POST" && path === "/auth/login") {
-      const { username, password } = body || {};
-      const u = db.users.find((x) => x.username === username && x.password === password);
+      const { email, password } = body || {};
+      const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+      if (!EMAIL_PATTERN.test(normalizedEmail) || typeof password !== "string") {
+        throw fail(401, "BAD_CREDENTIALS", "用户名或密码错误");
+      }
+      const u = db.users.find((x) => x.email === normalizedEmail && x.password === password);
       if (!u) throw fail(401, "BAD_CREDENTIALS", "用户名或密码错误");
-      localStorage.setItem(TOKEN_KEY, `mock_${username}`);
-      return { token: `mock_${username}`, user: { id: u.id, username: u.username } };
+      localStorage.setItem(TOKEN_KEY, `mock_${normalizedEmail}`);
+      return { token: `mock_${normalizedEmail}`, user: { id: u.id, username: u.username, email: u.email } };
     }
 
     if (method === "GET" && path === "/auth/me") {
       if (!user) throw fail(401, "UNAUTHORIZED", "未登录");
-      return { id: user.id, username: user.username };
+      return { id: user.id, username: user.username, email: user.email || null };
     }
 
     // ===== 题库 =====

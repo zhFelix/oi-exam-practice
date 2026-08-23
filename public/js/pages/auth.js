@@ -1,12 +1,16 @@
 /* ============================================================
    pages/auth.js —— P9 登录 / P10 注册 / P11 个人中心
+   - Supabase Auth 适配（t18）：登录标识为 email，username 为昵称/显示名
    - 登录成功回跳 redirect 参数指向的页面
-   - 表单内联校验（用户名格式、密码 ≥6 位、两次一致、重名提示）
+   - 表单内联校验（邮箱格式、昵称格式、密码 ≥6 位、两次一致、重复注册提示）
    ============================================================ */
 
 import { api } from "../api.js";
 import { toast, confirmDialog } from "../components.js";
 import { escapeHtml } from "../utils.js";
+
+/** 邮箱格式（与后端 server/routes/auth.js 的 EMAIL_PATTERN 保持一致） */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /* ================= P9 登录 ================= */
 
@@ -23,9 +27,9 @@ export const LoginPage = {
           </div>
           <form id="login-form" novalidate>
             <div class="form-item">
-              <label for="login-user">用户名</label>
-              <input id="login-user" name="username" autocomplete="username" placeholder="请输入用户名" required>
-              <div class="form-error" id="err-user"></div>
+              <label for="login-email">邮箱</label>
+              <input id="login-email" name="email" type="email" autocomplete="email" placeholder="请输入邮箱" required>
+              <div class="form-error" id="err-email"></div>
             </div>
             <div class="form-item">
               <label for="login-pass">密码</label>
@@ -35,7 +39,7 @@ export const LoginPage = {
             <button class="btn btn-primary btn-block" type="submit" id="btn-login">登 录</button>
           </form>
           <div class="form-footer">没有账号？<a href="#/register">立即注册</a></div>
-          <div class="form-footer" id="demo-hint" style="display:none">💡 演示账号：<span class="mono">demo</span> / <span class="mono">123456</span></div>
+          <div class="form-footer" id="demo-hint" style="display:none">💡 演示账号：<span class="mono">demo@example.com</span> / <span class="mono">123456</span></div>
         </div>
       </div>`;
 
@@ -45,23 +49,24 @@ export const LoginPage = {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const els = form.elements;
-      const username = els.username.value.trim();
+      const email = els.email.value.trim().toLowerCase();
       const password = els.password.value;
-      const errUser = app.querySelector("#err-user");
+      const errEmail = app.querySelector("#err-email");
       const errPass = app.querySelector("#err-pass");
-      errUser.textContent = ""; errPass.textContent = "";
-      if (!username) { errUser.textContent = "请输入用户名"; return; }
+      errEmail.textContent = ""; errPass.textContent = "";
+      if (!EMAIL_PATTERN.test(email)) { errEmail.textContent = "请输入正确的邮箱地址"; return; }
       if (!password) { errPass.textContent = "请输入密码"; return; }
       const btn = app.querySelector("#btn-login");
       btn.disabled = true; btn.textContent = "登录中…";
       try {
-        const data = await api.post("/auth/login", { username, password });
+        const data = await api.post("/auth/login", { email, password });
         api.setToken(data.token);
         window.dispatchEvent(new CustomEvent("auth:change", { detail: data.user }));
-        toast(`欢迎回来，${data.user.username} 👋`, "success");
+        toast(`欢迎回来，${data.user.username || data.user.email} 👋`, "success");
         location.hash = `#${redirect}`;
       } catch (err) {
-        app.querySelector("#err-pass").textContent = err.message || "登录失败";
+        // 统一提示"用户名或密码错误"（不区分具体错误，DoD F0）
+        errPass.textContent = err.message || "用户名或密码错误";
         btn.disabled = false; btn.textContent = "登 录";
       }
     });
@@ -84,8 +89,13 @@ export const RegisterPage = {
           </div>
           <form id="reg-form" novalidate>
             <div class="form-item">
-              <label for="reg-user">用户名</label>
-              <input id="reg-user" name="username" autocomplete="username" placeholder="3~20 位字母、数字或下划线">
+              <label for="reg-email">邮箱（登录账号）</label>
+              <input id="reg-email" name="email" type="email" autocomplete="email" placeholder="请输入邮箱">
+              <div class="form-error" id="err-email"></div>
+            </div>
+            <div class="form-item">
+              <label for="reg-user">昵称（显示名）</label>
+              <input id="reg-user" name="username" autocomplete="nickname" placeholder="3~20 位字母、数字或下划线">
               <div class="form-error" id="err-user"></div>
             </div>
             <div class="form-item">
@@ -108,30 +118,34 @@ export const RegisterPage = {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const els = form.elements;
+      const email = els.email.value.trim().toLowerCase();
       const username = els.username.value.trim();
       const password = els.password.value;
       const confirmPassword = els.confirmPassword.value;
+      const errEmail = app.querySelector("#err-email");
       const errUser = app.querySelector("#err-user");
       const errPass = app.querySelector("#err-pass");
       const errPass2 = app.querySelector("#err-pass2");
-      errUser.textContent = ""; errPass.textContent = ""; errPass2.textContent = "";
+      errEmail.textContent = ""; errUser.textContent = ""; errPass.textContent = ""; errPass2.textContent = "";
 
       // 内联校验
-      if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) { errUser.textContent = "用户名需为 3~20 位字母、数字或下划线"; return; }
+      if (!EMAIL_PATTERN.test(email)) { errEmail.textContent = "请输入正确的邮箱地址"; return; }
+      if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) { errUser.textContent = "昵称需为 3~20 位字母、数字或下划线"; return; }
       if (password.length < 6) { errPass.textContent = "密码至少 6 位"; return; }
       if (password !== confirmPassword) { errPass2.textContent = "两次输入的密码不一致"; return; }
 
       const btn = app.querySelector("#btn-reg");
       btn.disabled = true; btn.textContent = "注册中…";
       try {
-        const data = await api.post("/auth/register", { username, password, confirmPassword });
+        const data = await api.post("/auth/register", { email, username, password, confirmPassword });
         api.setToken(data.token);
         window.dispatchEvent(new CustomEvent("auth:change", { detail: data.user }));
         toast("注册成功，已自动登录 🎉", "success");
         location.hash = `#${redirect}`;
       } catch (err) {
-        // 服务端错误（如重名 409）按错误码就地显示
-        if (err.code === "USERNAME_TAKEN") errUser.textContent = err.message;
+        // 服务端错误按错误码就地显示
+        if (err.code === "EMAIL_TAKEN" || err.code === "INVALID_EMAIL") errEmail.textContent = err.message;
+        else if (err.code === "USERNAME_TAKEN" || err.code === "INVALID_USERNAME") errUser.textContent = err.message;
         else if (err.code === "WEAK_PASSWORD") errPass.textContent = err.message;
         else if (err.code === "PASSWORD_MISMATCH") errPass2.textContent = err.message;
         else toast(err.message || "注册失败", "error");
@@ -153,7 +167,8 @@ export const ProfilePage = {
           <div class="profile-avatar" id="pf-avatar">◈</div>
           <div>
             <div class="profile-username" id="pf-name">--</div>
-            <div class="card-sub">信息学竞赛笔试刷题 · 备考 CSP-J/S · NOIP</div>
+            <div class="profile-email" id="pf-email" style="color:var(--text-secondary);font-size:13px">--</div>
+            <div class="card-sub" style="margin-top:4px">信息学竞赛笔试刷题 · 备考 CSP-J/S · NOIP</div>
           </div>
         </div>
         <div class="profile-actions">
@@ -166,8 +181,10 @@ export const ProfilePage = {
 
     try {
       const me = await api.get("/auth/me");
-      app.querySelector("#pf-name").textContent = me.username;
-      app.querySelector("#pf-avatar").textContent = me.username ? me.username.slice(0, 1).toUpperCase() : "◈";
+      app.querySelector("#pf-name").textContent = me.username || me.email || "--";
+      app.querySelector("#pf-email").textContent = me.email ? `邮箱：${me.email}` : "--";
+      const initial = (me.username || me.email || "◈").slice(0, 1).toUpperCase();
+      app.querySelector("#pf-avatar").textContent = initial;
     } catch (e) {
       app.querySelector("#pf-name").textContent = "未登录";
     }

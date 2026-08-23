@@ -1,6 +1,9 @@
 /* ============================================================
-   utils.js —— 通用工具函数（无依赖）
+   utils.js —— 通用工具函数
+   依赖：本地 vendor/katex（零 CDN），仅用于 Markdown/LaTeX 渲染
    ============================================================ */
+
+import * as katexESM from "../vendor/katex/katex.mjs";
 
 /** HTML 转义，防止题目文本中的特殊字符破坏页面结构 */
 export function escapeHtml(str) {
@@ -12,34 +15,130 @@ export function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
-/**
- * 极简 Markdown 渲染（覆盖题目实际用到的语法）：
- *  - ```代码块``` / ```lang ...``` → <pre class="code-block">
- *  - 行内 `code` → <code class="inline">
- *  - **加粗** → <strong>
- *  - 普通换行 → <p> 分段
- * 返回安全 HTML 字符串（已转义）。
- */
+/* ============================================================
+   Markdown / LaTeX 渲染
+   支持语法（新增 LaTeX 与常用 Markdown，兼容原有调用点）：
+   - 代码块 ```...``` / ```lang ...```
+   - LaTeX 公式：块级 $$...$$（居中）、行内 $...$（KaTeX 本地渲染）
+   - 标题：# / ## / ###
+   - 列表：无序（- / * / + 开头）、有序（1. 2. …）
+   - 加粗 **text**、斜体 *text*、删除线 ~~text~~、行内代码 `code`
+   - 链接 [text](url)（仅 http(s)/相对路径/#hash，防伪协议）
+   - 普通段落（换行分段）
+   安全：所有 Markdown 文本先 escapeHtml 再加工，不渲染原始 HTML（防 XSS）；
+   公式内容在转义前提取并交由 KaTeX 渲染（KaTeX 输出为安全 HTML）。
+   ============================================================ */
+
+// KaTeX 实例：优先用 index.html 中 katex.min.js 提供的 window.katex，否则用 ESM 版
+const katexImpl = (typeof window !== "undefined" && window.katex) || katexESM || null;
+
+// 占位符前缀：\x00 不会被 escapeHtml 转义，且题目/解析文本中不会出现
+const PH = "\u0000KX";
+
 export function renderMarkdown(text) {
   if (!text) return "";
-  // 1) 先按代码块切分
-  const parts = String(text).split(/```/);
-  let html = "";
-  for (let i = 0; i < parts.length; i++) {
+  const tokens = []; // 占位 → 最终 HTML（代码块 / 公式）
+  let body = String(text);
+
+  // 1) 切分代码块：代码块内不做任何 Markdown / LaTeX 解析
+  const codeParts = body.split(/```/);
+  let src = "";
+  for (let i = 0; i < codeParts.length; i++) {
     if (i % 2 === 1) {
-      // 代码块内容（首行可能带语言标注，忽略之）
-      const code = parts[i].replace(/^[a-zA-Z0-9+#-]*\n/, "").trim();
-      html += `<pre class="code-block">${escapeHtml(code)}</pre>`;
+      const code = codeParts[i].replace(/^[a-zA-Z0-9+#-]*\n/, "").trim();
+      src += pushToken(tokens, `<pre class="code-block">${escapeHtml(code)}</pre>`);
     } else {
-      // 普通文本：转义 → 行内代码 → 加粗 → 分段
-      let seg = escapeHtml(parts[i]);
-      seg = seg.replace(/`([^`]+)`/g, (m, c) => `<code class="inline">${c}</code>`);
-      seg = seg.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-      const paras = seg.split(/\n+/).map((p) => p.trim()).filter(Boolean);
-      html += paras.map((p) => `<p>${p}</p>`).join("");
+      src += codeParts[i];
     }
   }
-  return html;
+
+  // 2) 提取 LaTeX：先块级 $$...$$，再行内 $...$（渲染结果直接入 token，
+  //    公式内容不会经过 Markdown 转义/加粗等处理）
+  src = src.replace(/\$\$([\s\S]+?)\$\$/g, (m, tex) => pushToken(tokens, renderLatex(tex, true)));
+  src = src.replace(/\$([^$\n]+?)\$/g, (m, tex) => pushToken(tokens, renderLatex(tex, false)));
+
+  // 3) 行级处理：标题 / 列表 / 段落
+  const lines = src.split("\n");
+  const out = [];
+  let listType = null; // 'ul' | 'ol' | null
+  const closeList = () => {
+    if (listType) { out.push(`</${listType}>`); listType = null; }
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) { closeList(); continue; }
+
+    // 标题
+    const h = line.match(/^(#{1,3})\s+(.*)$/);
+    if (h) {
+      closeList();
+      const level = h[1].length;
+      out.push(`<h${level}>${processInline(h[2])}</h${level}>`);
+      continue;
+    }
+
+    // 无序列表
+    const ul = line.match(/^[-*+]\s+(.*)$/);
+    if (ul) {
+      if (listType !== "ul") { closeList(); out.push("<ul>"); listType = "ul"; }
+      out.push(`<li>${processInline(ul[1])}</li>`);
+      continue;
+    }
+
+    // 有序列表
+    const ol = line.match(/^\d+[.、]\s+(.*)$/);
+    if (ol) {
+      if (listType !== "ol") { closeList(); out.push("<ol>"); listType = "ol"; }
+      out.push(`<li>${processInline(ol[1])}</li>`);
+      continue;
+    }
+
+    // 普通段落（与旧版一致：每行一个 <p>）
+    closeList();
+    out.push(`<p>${processInline(line)}</p>`);
+  }
+  closeList();
+
+  // 4) 恢复占位符（代码块 / 公式）
+  return out.join("").replace(new RegExp(PH + "(\\d+)" + PH, "g"), (m, i) => tokens[Number(i)] || "");
+}
+
+/** 行内处理：转义 → 行内代码 → 加粗 → 斜体 → 删除线 → 链接（顺序保证互不干扰） */
+function processInline(text) {
+  let s = escapeHtml(text);
+  s = s.replace(/`([^`]+)`/g, (m, c) => `<code class="inline">${c}</code>`);
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  s = s.replace(/~~([^~]+)~~/g, "<del>$1</del>");
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|#\/[^\s)]+|\/[^\s)]+)\)/g,
+    (m, label, url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+  return s;
+}
+
+/** KaTeX 渲染：失败或未加载时转义原文兜底 */
+function renderLatex(tex, displayMode) {
+  const source = tex.trim();
+  if (!source) return "";
+  try {
+    if (katexImpl) {
+      const html = katexImpl.renderToString(source, {
+        throwOnError: false,
+        displayMode,
+        strict: false,
+      });
+      return displayMode ? `<div class="katex-block">${html}</div>` : html;
+    }
+  } catch (e) {
+    console.warn("[markdown] KaTeX 渲染失败，按原文显示：", source, e);
+  }
+  return `<span class="katex-fallback">${escapeHtml(source)}</span>`;
+}
+
+/** 登记 token 并返回占位符 */
+function pushToken(tokens, html) {
+  tokens.push(html);
+  return PH + (tokens.length - 1) + PH;
 }
 
 /** 从 URL 中解析查询参数（支持 #/path?a=1&b=2 形式） */

@@ -106,5 +106,28 @@ assert(cats.items.length === 7, "7 个分类统计项");
 const types = await MockBackend.handle("GET", "/stats/types", null, {});
 assert(types.items.length === 4, "4 个题型统计项");
 
+console.log("\n[8] Markdown / LaTeX 渲染（renderMarkdown，KaTeX 本地渲染）");
+const { renderMarkdown } = await import("../public/js/utils.js");
+// 行内公式：$O(n\log n)$
+const mdInline = renderMarkdown("时间复杂度为 $O(n\\log n)$ 的排序算法");
+assert(mdInline.includes('class="katex"') && !mdInline.includes("$O(n"), "行内公式 $O(n\\log n)$ 渲染为 KaTeX");
+// 块级公式：$$\frac{1}{2}$$
+const mdBlock = renderMarkdown("公式：\n\n$$\\frac{1}{2}+\\frac{1}{4}=\\frac{3}{4}$$\n\n完毕");
+assert(mdBlock.includes('class="katex-block"') && mdBlock.includes("katex-display"), "块级公式 $$\\frac{1}{2}$$ 渲染（katex-block+display）");
+// 公式与 Markdown 共存互不干扰
+const mdMix = renderMarkdown("$a_1 < b_2$ 与 **加粗**、`code` 并存");
+assert(mdMix.includes("katex") && mdMix.includes("<strong>加粗</strong>") && mdMix.includes('<code class="inline">code</code>'), "公式与加粗/行内代码共存");
+// 新 Markdown 语法
+assert(renderMarkdown("## 二级标题").includes("<h2>二级标题</h2>"), "标题 ##");
+const mdList = renderMarkdown("- 甲\n- 乙\n1. 一\n2. 二");
+assert(mdList.includes("<ul><li>甲</li><li>乙</li></ul>") && mdList.includes("<ol><li>一</li><li>二</li></ol>"), "无序/有序列表");
+assert(renderMarkdown("*斜体* 和 ~~删除线~~").includes("<em>斜体</em>") && renderMarkdown("~~删除线~~").includes("<del>删除线</del>"), "斜体与删除线");
+assert(renderMarkdown("[链接](https://example.com/x)").includes('<a href="https://example.com/x"'), "链接渲染");
+assert(!renderMarkdown("[x](javascript:alert(1))").includes("<a "), "伪协议链接被拒绝（安全）");
+// 安全与兼容
+assert(!renderMarkdown("<script>alert(1)</script>").includes("<script>"), "原始 HTML 不渲染（XSS 安全）");
+assert(renderMarkdown("```cpp\nint a = 1; // $O(n)$\n```").includes("$O(n)$") && !renderMarkdown("```x\n$y$\n```").includes("katex"), "代码块内 $...$ 不解析");
+assert(renderMarkdown("**加粗** 与 `code` 回归正常").includes("<strong>加粗</strong>"), "原有语法回归（加粗/行内代码）");
+
 console.log(`\n===== 冒烟测试结果：通过 ${pass} 项，失败 ${fail} 项 =====`);
 process.exit(fail ? 1 : 0);

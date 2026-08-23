@@ -743,6 +743,48 @@ body.exam-mode #app { padding: 0; max-width: none; }
 .about-section li { padding: var(--space-2) 0; color: var(--text-secondary); border-bottom: 1px dashed var(--border); }
 .about-section li::before { content: "▸ "; color: var(--accent); }
 
+/* ============ 14. KaTeX 与 Markdown 内容渲染适配 ============ */
+
+/* 块级公式：居中 + 溢出滚动（深色科技风下文字色随主题） */
+.katex-block {
+  text-align: center;
+  margin: var(--space-3) 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+}
+.katex-block .katex-display { margin: 0; }
+
+/* 公式文字颜色适配深色主题（KaTeX 默认继承，这里显式兜底） */
+.katex { color: var(--text-main); }
+.katex-display > .katex { font-size: 1.15em; }
+.katex-fallback {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: .95em;
+  background: var(--bg-code);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 6px;
+}
+
+/* 题干/解析内的 Markdown 结构（标题/列表）适配 */
+.qc-stem h1, .qc-stem h2, .qc-stem h3,
+.analysis-body h1, .analysis-body h2, .analysis-body h3 {
+  font-size: 16px;
+  margin: var(--space-3) 0 var(--space-2);
+  color: var(--text-main);
+}
+.qc-stem h1, .analysis-body h1 { font-size: 18px; }
+.qc-stem h3, .analysis-body h3 { font-size: 14px; color: var(--text-secondary); }
+
+.qc-stem ul, .qc-stem ol,
+.analysis-body ul, .analysis-body ol {
+  margin: var(--space-2) 0 var(--space-2) 20px;
+}
+.qc-stem li, .analysis-body li { margin-bottom: 4px; }
+.qc-stem del, .analysis-body del { color: var(--text-muted); }
+
 /* ============ 13. 响应式断点（§2.4） ============ */
 
 @media (max-width: 1023px) {

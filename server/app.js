@@ -5,7 +5,7 @@ import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import { FRONTEND_DIR } from './config.js';
-import { initQuestionBank, initExams } from './store/collections.js';
+import { initQuestionBank, initExams, initStores } from './store/collections.js';
 import { notFoundHandler, errorHandler } from './middleware/error.js';
 import { requireAuth } from './middleware/auth.js';
 import authRoutes from './routes/auth.js';
@@ -16,10 +16,14 @@ import wrongBookRoutes from './routes/wrong-book.js';
 import statsRoutes from './routes/stats.js';
 import examsRoutes from './routes/exams.js';
 
-/** 创建 Express 应用（题库与模拟卷在启动时加载） */
-export function createApp() {
-  initQuestionBank();
-  initExams();
+/**
+ * 创建 Express 应用（t12：启动时先加载题库/模拟卷并初始化存储层
+ * —— Supabase 优先，不可用时回退 JSON 文件）
+ */
+export async function createApp() {
+  await initQuestionBank();
+  await initExams();
+  await initStores();
 
   const app = express();
   app.use(express.json());

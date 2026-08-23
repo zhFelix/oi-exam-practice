@@ -8,12 +8,14 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "test": "node server/__tests__/grader.test.js",
-    "smoke": "node scripts/smoke.js"
+    "smoke": "node scripts/smoke.js",
+    "migrate:supabase": "node scripts/migrate-to-supabase.mjs"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
     "bcryptjs": "^2.4.3",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2"

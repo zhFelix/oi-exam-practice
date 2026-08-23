@@ -1,6 +1,7 @@
 // ============================================================
 // config.js —— 服务器配置与枚举定义（支持环境变量覆盖）
 // ============================================================
+import './utils/load-env.js'; // 若存在项目根 .env，自动加载（不覆盖已有环境变量）
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,6 +34,27 @@ export const AUTH_RATE_LIMIT = {
   windowMs: 10 * 60 * 1000,
   max: Number(process.env.AUTH_RATE_LIMIT_MAX || 20),
 };
+
+// ============================================================
+// Supabase（PostgreSQL）配置 —— 阶段1 框架搭建（t11）
+// 存储层从 JSON 文件迁移到 Supabase 的准备工作；凭据稍后提供，
+// 未配置时使用占位值并打警告日志（业务路由暂未接入，阶段2 再替换）。
+// ============================================================
+
+/** Supabase 项目 URL（环境变量 SUPABASE_URL，如 https://xxxx.supabase.co） */
+export const SUPABASE_URL = process.env.SUPABASE_URL || 'https://placeholder.supabase.co';
+/**
+ * Supabase key（环境变量 SUPABASE_KEY 或 SUPABASE_SERVICE_KEY）。
+ * 注意：后端使用 service_role key（绕过 RLS，仅限服务端，绝不能暴露给前端）。
+ */
+export const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_KEY || 'placeholder-anon-key';
+
+if (!process.env.SUPABASE_URL || !(process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_KEY)) {
+  console.warn(
+    '[config] ⚠ 未设置 SUPABASE_URL / SUPABASE_KEY(或 SUPABASE_SERVICE_KEY) 环境变量，正在使用占位配置（Supabase 客户端仅可创建，无法请求）。' +
+    '联调前请在项目根 .env 或环境变量中配置：SUPABASE_URL=<项目URL>、SUPABASE_SERVICE_KEY=<service_role key>'
+  );
+}
 
 // 题型（与 data/questions.json 顶层 question_types 一致）
 export const QUESTION_TYPES = ['single', 'multiple', 'judge', 'reading'];

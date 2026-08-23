@@ -13,7 +13,7 @@
 //   - Supabase 不可用：启动 load 失败由 collections.js 回退 JSON DataStore；
 //     运行中写失败仅记日志（内存继续服务），DB 以最后一次成功落库为准
 // ============================================================
-import { supabase } from './supabase.js';
+import { supabaseData } from './supabase.js';
 
 export class SupabaseStore {
   /**
@@ -28,7 +28,7 @@ export class SupabaseStore {
 
   /** 启动时整表载入内存（initStores 调用；失败抛错由调用方回退 JSON） */
   async load() {
-    const { data, error } = await supabase.from(this.table).select('*');
+    const { data, error } = await supabaseData.from(this.table).select('*');
     if (error) throw error;
     this.rows = data || [];
     return this;
@@ -52,7 +52,13 @@ export class SupabaseStore {
 
   insert(doc) {
     this.rows.push(doc);
-    this._persist(() => supabase.from(this.table).insert(doc), `insert ${this.table}`);
+    this._persist(() => supabaseData.from(this.table).insert(doc), `insert ${this.table}`);
+    return doc;
+  }
+
+  /** 仅更新内存缓存，不触发持久化——用于已在 Supabase 侧直接写入（如 auth 路由）的场景 */
+  cachePush(doc) {
+    this.rows.push(doc);
     return doc;
   }
 
@@ -71,7 +77,7 @@ export class SupabaseStore {
       this._persist(async () => {
         for (const id of ids) {
           try {
-            const { error } = await supabase.from(this.table).update(patch).eq('id', id);
+            const { error } = await supabaseData.from(this.table).update(patch).eq('id', id);
             if (error) throw error;
           } catch (e) {
             console.error(`[supabase-store] update ${this.table} id=${id} 失败:`, e.message);
@@ -90,7 +96,7 @@ export class SupabaseStore {
       this._persist(async () => {
         for (const id of ids) {
           try {
-            const { error } = await supabase.from(this.table).delete().eq('id', id);
+            const { error } = await supabaseData.from(this.table).delete().eq('id', id);
             if (error) throw error;
           } catch (e) {
             console.error(`[supabase-store] delete ${this.table} id=${id} 失败:`, e.message);
